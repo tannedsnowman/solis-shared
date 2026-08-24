@@ -59,8 +59,7 @@
     "sync-registers": "node scripts/sync-registers.mjs"
   },
   "devDependencies": {
-    "@types/react": "^18.2.42",
-    "react": "^18.2.0",
+    "@types/react": "18.2.42",
     "typescript": "5.9.3",
     "vitest": "^2.1.9"
   },
@@ -93,6 +92,14 @@
     }
   },
   "peerDependencies": {
-    "react": "^18.2.0"
+    "@types/react": "^18.2.0"
+  },
+  "peerDependenciesMeta": {
+    "@types/react": {
+      "optional": true
+    }
+  },
+  "overrides": {
+    "csstype": "3.1.1"
   }
 }

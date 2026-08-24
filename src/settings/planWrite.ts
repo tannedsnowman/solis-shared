@@ -23,35 +23,27 @@
 import { mergeForWrite } from './bitRules';
 import type { WordOrder } from '../decode/primitives';
 
-/**
- * The write-relevant half of a rules-file record.
- *
- * Deliberately NOT `RegisterRule`. The three rules files genuinely disagree on
- * fields this module never reads — EPM's `related_registers` is strings where
- * hybrid's is numbers, PV's `bit_groups[].bits` is nullable — so demanding the
- * full type here would force a merge that has nothing to do with writing.
- * This is the narrowest contract every rules file already satisfies.
- */
-export interface WriteRule {
-  write?: string;
-  write_with?: number[];
-}
-
-/** What the map says about the register's shape on the wire. */
-export interface WriteRegister {
-  kind?: string | null;
-  word_order?: WordOrder;
-}
-
 export interface WriteRequest {
   /** ABSOLUTE address, e.g. 43110. Never add a 43000 base. */
   address: number;
   /** The value the register should end up holding. */
   value: number;
-  /** The register's map record, or null when the map does not cover it. */
-  register: WriteRegister | null;
-  /** The register's rule, or undefined when it has none. */
-  rule?: WriteRule;
+  /**
+   * The register's write mode, from its rules file — or `'none'` when it has
+   * no rule.
+   *
+   * A STRING, and required. The three rules files disagree on fields this
+   * module never reads (EPM's `related_registers` is strings where hybrid's is
+   * numbers), so taking the whole record would force a merge that has nothing
+   * to do with writing. Required rather than optional because an omitted write
+   * mode reads exactly like `'plain'`, and `read_modify_write` silently
+   * degrading to `plain` is the failure this module exists to prevent.
+   */
+  rule: string | { write?: string };
+  /** 16 or 32. The caller resolves this from the map via `widthForKind`. */
+  width: 16 | 32;
+  /** Which half of a wide register goes first. Only read when width is 32. */
+  wordOrder: WordOrder;
   /**
    * Which bits this editor owns. Bits outside the mask keep whatever the
    * device currently has. REQUIRED for `read_modify_write` — a missing mask
@@ -60,11 +52,6 @@ export interface WriteRequest {
   ownedMask?: number;
   /** The device's current word, when the caller already has it. */
   currentValue?: number;
-  /**
-   * Force 32-bit. Only ever forces UP: the failure this guards is a wide
-   * register the map still calls narrow, never the reverse.
-   */
-  width?: 16 | 32;
 }
 
 export type RefusalCode =
@@ -88,8 +75,8 @@ export interface WritePlanFrame {
   /** Words in ADDRESS order, word order already applied. */
   words: number[];
   /**
-   * The full 16-bit value this write lands, after any merge. Lets a caller
-   * show "43110: 0x0021 -> 0x0025" without redoing the arithmetic.
+   * The full value this write lands, after any merge. Lets a caller show
+   * "43110: 0x0021 -> 0x0025" without redoing the arithmetic.
    */
   merged: number;
 }
@@ -102,27 +89,49 @@ const refuse = (code: RefusalCode, reason: string): WritePlanRefused => ({
   reason,
 });
 
-/** How many words the register occupies. The map is the authority. */
-export function widthOf(
-  register: WriteRegister | null,
+/**
+ * Width from the map's `kind`. An override only ever forces UP: the failure
+ * this guards is a wide register the map still calls narrow, never the reverse.
+ */
+export function widthForKind(
+  kind: string | null | undefined,
   override?: 16 | 32,
 ): 16 | 32 {
   if (override === 32) return 32;
-  const kind = register?.kind;
   return kind === 'u32' || kind === 's32' ? 32 : 16;
 }
 
-export function planWrite(req: WriteRequest): WritePlan {
-  const { address, rule, register } = req;
+/**
+ * True when the plan refused ONLY because it has not been given the device's
+ * current word.
+ *
+ * This is the one refusal a caller can answer by itself: read the register and
+ * call `planWrite` again with `currentValue` set. Every other refusal is final.
+ * Note a FAILED read must leave the second plan refusing too — that is what
+ * stops a failed read from becoming a guessed zero.
+ */
+export function wantsCurrentValue(plan: WritePlan): boolean {
+  return plan.kind === 'refuse' && plan.code === 'needs-read';
+}
 
-  if (rule?.write === 'read_only') {
+export function planWrite(req: WriteRequest): WritePlan {
+  const { address, width } = req;
+  /*
+   * Accept either the write mode itself or the whole rules record. Every hook
+   * had `ruleFor(address) ?? 'none'` at the call site — the record, not its
+   * `write` field — so demanding a bare string here would mean the same
+   * one-line unwrap repeated at four call sites, each free to get it wrong.
+   * A record with NO `write` field means the same as no rule: plain.
+   */
+  const rule =
+    typeof req.rule === 'string' ? req.rule : (req.rule?.write ?? 'none');
+
+  if (rule === 'read_only') {
     return refuse('read-only', `Register ${address} is read-only`);
   }
 
-  const width = widthOf(register, req.width);
-
   if (width === 32) {
-    if (rule?.write === 'read_modify_write') {
+    if (rule === 'read_modify_write') {
       // No 32-bit register is a bitfield, so there is no correct wide merge to
       // perform. Refuse rather than send half of one.
       return refuse(
@@ -134,15 +143,15 @@ export function planWrite(req: WriteRequest): WritePlan {
     const raw = Math.trunc(req.value) >>> 0;
     const hi = (raw >>> 16) & 0xffff;
     const lo = raw & 0xffff;
-    // Read the word order rather than assuming 'be'. A later revision flipping
-    // one would otherwise write a value wrong by a factor of 65536 — and the
+    // Read the word order rather than assuming 'be'. A revision flipping one
+    // would otherwise write a value wrong by a factor of 65536 — and the
     // inverter would ACK it.
-    const words = register?.word_order === 'le' ? [lo, hi] : [hi, lo];
+    const words = req.wordOrder === 'le' ? [lo, hi] : [hi, lo];
 
     return { kind: 'write', address, fn: 16, words, merged: raw };
   }
 
-  if (rule?.write === 'read_modify_write') {
+  if (rule === 'read_modify_write') {
     if (req.ownedMask === undefined) {
       return refuse(
         'needs-mask',
@@ -169,4 +178,55 @@ export function planWrite(req: WriteRequest): WritePlan {
 
   const value = req.value & 0xffff;
   return { kind: 'write', address, fn: 6, words: [value], merged: value };
+}
+
+/* ------------------------------------------------------------------ *
+ * Parsing a text box into a word.
+ *
+ * These sit beside `planWrite` rather than inside it because they answer a
+ * different question: `planWrite` decides what a write MEANS, these decide
+ * whether what the installer typed is a number at all. A row calls the parser
+ * first and only reaches `planWrite` with a value in hand.
+ * ------------------------------------------------------------------ */
+
+/**
+ * A settings text box into a 16-bit word, or `null` when it is not one.
+ *
+ * `null` means "do not send" — a blank box, a typo, or a value that cannot fit
+ * a register. It is never coerced to 0, because 0 is a legitimate setting on
+ * most of these registers and would be written without complaint.
+ */
+export function planSettingWrite(editValue: string): number | null {
+  const val = parseInt(editValue, 10);
+  if (isNaN(val) || val < 0 || val > 65535) return null;
+  return val;
+}
+
+/**
+ * The full word for a write that replaces ONE BYTE and preserves the other.
+ *
+ * An unread register counts as zero here, deliberately: the EPM-AX meter
+ * settings are routinely set before anything has been read, and refusing would
+ * block a screen that works. This is the one place in the settings model where
+ * a missing read is not a refusal — it is safe only because these registers
+ * pack two independent bytes rather than a bitfield, so the worst case is
+ * writing a zero into the other byte that the installer is about to set
+ * anyway. Do NOT copy this leniency to `planWrite`, where the same assumption
+ * would silently clear protection bits.
+ */
+export function planByteWrite(
+  byte: 'low' | 'high',
+  editValue: string,
+  currentValue: number | undefined,
+): number | null {
+  const newByte = parseInt(editValue, 10);
+  if (isNaN(newByte)) return null;
+
+  const current = currentValue ?? 0;
+  const currentLow = current & 0xff;
+  const currentHigh = (current >> 8) & 0xff;
+
+  return byte === 'low'
+    ? (currentHigh << 8) | (newByte & 0xff)
+    : ((newByte & 0xff) << 8) | currentLow;
 }

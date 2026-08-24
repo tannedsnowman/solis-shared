@@ -31,6 +31,19 @@ import * as faultSolutions from './faultSolutions';
 
 export { gospel, pvGospel, epmGospel, faultGospel, pvRules, epmRules, faultSolutions };
 
+/*
+ * Family aliases, which is how the address-conformance tests name them:
+ *
+ *   import { hybrid, pv, epm } from '@solis/shared/gospel';
+ *   hybrid.byKey('builtInMeterACVoltageB');
+ *
+ * `hybrid` rather than `gospel` because "the gospel" is the whole tier, not
+ * the hybrid map — the name only read as unambiguous back when hybrid was the
+ * only family here. EPM and EPM-AX share one loader and are told apart by
+ * device, not by module.
+ */
+export { gospel as hybrid, pvGospel as pv, epmGospel as epm };
+
 /* The hybrid map, flat — the original, and what a bare `byAddress` means. */
 export * from './gospel';
 

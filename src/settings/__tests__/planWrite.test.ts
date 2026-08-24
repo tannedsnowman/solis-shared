@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { planWrite, widthOf } from '../planWrite';
+import { planWrite, widthForKind, wantsCurrentValue } from '../planWrite';
 import { packAll, packField } from '../packedFields';
 
-const rmw = { write: 'read_modify_write' };
-const u16 = { kind: 'u16' as const };
+const RMW = 'read_modify_write';
+const W16 = { width: 16 as const, wordOrder: 'be' as const };
+const W32 = { width: 32 as const, wordOrder: 'be' as const };
 
 describe('the safety rule: read_modify_write never guesses', () => {
   /*
@@ -13,20 +14,22 @@ describe('the safety rule: read_modify_write never guesses', () => {
    * ours, and without the CURRENT WORD we cannot preserve the rest.
    */
   it('refuses when the owned mask is missing', () => {
-    const p = planWrite({ address: 43110, value: 0x0004, register: u16, rule: rmw, currentValue: 0x0021 });
+    const p = planWrite({ address: 43110, value: 0x0004, rule: RMW, ...W16, currentValue: 0x0021 });
     expect(p.kind).toBe('refuse');
     if (p.kind === 'refuse') expect(p.code).toBe('needs-mask');
   });
 
   it('asks for a read rather than assuming zero', () => {
-    const p = planWrite({ address: 43110, value: 0x0004, register: u16, rule: rmw, ownedMask: 0x0004 });
+    const p = planWrite({ address: 43110, value: 0x0004, rule: RMW, ...W16, ownedMask: 0x0004 });
     expect(p.kind).toBe('refuse');
     if (p.kind === 'refuse') expect(p.code).toBe('needs-read');
+    // The hook answers THIS refusal by reading; every other one is final.
+    expect(wantsCurrentValue(p)).toBe(true);
   });
 
   it('keeps the bits it does not own', () => {
     const p = planWrite({
-      address: 43110, value: 0x0004, register: u16, rule: rmw,
+      address: 43110, value: 0x0004, rule: RMW, ...W16,
       ownedMask: 0x0004, currentValue: 0x0021,
     });
     expect(p.kind).toBe('write');
@@ -38,7 +41,7 @@ describe('the safety rule: read_modify_write never guesses', () => {
 
   it('clearing an owned bit leaves the others standing', () => {
     const p = planWrite({
-      address: 43110, value: 0x0000, register: u16, rule: rmw,
+      address: 43110, value: 0x0000, rule: RMW, ...W16,
       ownedMask: 0x0004, currentValue: 0x0025,
     });
     if (p.kind === 'write') expect(p.merged).toBe(0x0021);
@@ -46,7 +49,7 @@ describe('the safety rule: read_modify_write never guesses', () => {
 
   it('a mask of zero is a real answer, not a missing one', () => {
     const p = planWrite({
-      address: 43110, value: 0xffff, register: u16, rule: rmw,
+      address: 43110, value: 0xffff, rule: RMW, ...W16,
       ownedMask: 0, currentValue: 0x0021,
     });
     expect(p.kind).toBe('write');
@@ -55,7 +58,7 @@ describe('the safety rule: read_modify_write never guesses', () => {
 
   it('a currentValue of zero is a real answer too', () => {
     const p = planWrite({
-      address: 43110, value: 0x0004, register: u16, rule: rmw,
+      address: 43110, value: 0x0004, rule: RMW, ...W16,
       ownedMask: 0x0004, currentValue: 0,
     });
     expect(p.kind).toBe('write');
@@ -64,7 +67,7 @@ describe('the safety rule: read_modify_write never guesses', () => {
 
 describe('width decides the function code', () => {
   it('sends a 32-bit register as function 16, high word first', () => {
-    const p = planWrite({ address: 44227, value: 100000, register: { kind: 's32' } });
+    const p = planWrite({ address: 44227, value: 100000, rule: 'none', ...W32 });
     expect(p.kind).toBe('write');
     if (p.kind === 'write') {
       expect(p.fn).toBe(16);
@@ -73,30 +76,30 @@ describe('width decides the function code', () => {
   });
 
   it('honours little-endian word order rather than assuming', () => {
-    const p = planWrite({ address: 44227, value: 100000, register: { kind: 's32', word_order: 'le' } });
+    const p = planWrite({ address: 44227, value: 100000, rule: 'none', width: 32, wordOrder: 'le' });
     if (p.kind === 'write') expect(p.words).toEqual([0x86a0, 0x0001]);
   });
 
   it('sends a 16-bit register as function 6', () => {
-    const p = planWrite({ address: 43000, value: 5, register: u16 });
+    const p = planWrite({ address: 43000, value: 5, rule: 'none', ...W16 });
     if (p.kind === 'write') { expect(p.fn).toBe(6); expect(p.words).toEqual([5]); }
   });
 
   it('refuses a wide read-modify-write rather than sending half a merge', () => {
-    const p = planWrite({ address: 44227, value: 1, register: { kind: 's32' }, rule: rmw, ownedMask: 1, currentValue: 0 });
+    const p = planWrite({ address: 44227, value: 1, rule: RMW, ...W32, ownedMask: 1, currentValue: 0 });
     if (p.kind === 'refuse') expect(p.code).toBe('wide-rmw-unsupported');
   });
 
   it('width only ever forces UP', () => {
-    expect(widthOf({ kind: 'u16' }, 32)).toBe(32);
-    expect(widthOf({ kind: 's32' })).toBe(32);
-    expect(widthOf(null)).toBe(16);
+    expect(widthForKind('u16', 32)).toBe(32);
+    expect(widthForKind('s32')).toBe(32);
+    expect(widthForKind(null)).toBe(16);
   });
 });
 
 describe('read-only', () => {
   it('refuses before anything else', () => {
-    const p = planWrite({ address: 33000, value: 1, register: u16, rule: { write: 'read_only' } });
+    const p = planWrite({ address: 33000, value: 1, rule: 'read_only', ...W16 });
     if (p.kind === 'refuse') expect(p.code).toBe('read-only');
   });
 });

@@ -1,0 +1,46 @@
+{
+  /*
+   * Output must be consumable by BOTH apps:
+   *   - serialTauriApp  : TypeScript 5.9.3, Vite, ESM, Vitest
+   *   - the extension   : TypeScript 5.9.3, CRA/webpack via craco, Jest
+   *
+   * Both are on 5.9.3 as of 2026-08-24 (the extension was bumped from 4.9.5
+   * precisely so this package could exist), so there is no language-level
+   * ceiling to work around. The constraint that remains is the BUNDLERS:
+   * emitted .js must be plain ES2020 modules that webpack 5 and Vite 6 both
+   * read without transform, which rules out Vite-only syntax such as `?raw`
+   * imports and `import.meta.glob`.
+   *
+   * Nothing here may reference `chrome.*`, `@tauri-apps`, `window`, `document`
+   * or `fs`. That is the whole point of the package, and `lib` below enforces
+   * it — there is no "dom" entry, so touching `window` is a compile error
+   * rather than a runtime surprise in whichever app imported it second.
+   */
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020"],
+    "module": "ES2020",
+    "moduleResolution": "node",
+
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "rootDir": "src",
+
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+
+    "isolatedModules": true,
+    "verbatimModuleSyntax": false
+  },
+  "include": ["src"],
+  "exclude": ["src/**/__tests__/**", "dist", "node_modules"]
+}

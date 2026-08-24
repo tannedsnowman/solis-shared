@@ -1,0 +1,37 @@
+{
+  "name": "@solis/shared",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Register maps and decoding shared by SolisConnect (Tauri) and the Solis debugger extension.",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./decode": {
+      "types": "./dist/decode/index.d.ts",
+      "default": "./dist/decode/index.js"
+    },
+    "./gospel": {
+      "types": "./dist/gospel/index.d.ts",
+      "default": "./dist/gospel/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "watch": "tsc -p tsconfig.json --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\""
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "vitest": "^2.1.9"
+  }
+}

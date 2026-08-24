@@ -21,3 +21,15 @@
  * The card components have no such collisions and are re-exported flat.
  */
 export * from './settings/GroupView';
+
+/*
+ * The PV settings MODELS. Each names its registers, decodes its words and
+ * builds its rows from the gospel, with no renderer and no transport -- which
+ * is why they are cards by the rule above and are proven without a DOM.
+ *
+ * Exported by subpath rather than flat: several models export the same short
+ * names (`ROWS`, `ADDRESSES`, `isReachable`) for their own screen, so a flat
+ * barrel would collide. Import the one you want:
+ *
+ *     import { DERATING_MODE } from '@solis/shared/ui/pv/pvFrequencyDeratingModel'
+ */

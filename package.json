@@ -11,6 +11,10 @@
       "types": "./dist/settings/index.d.ts",
       "default": "./dist/settings/index.js"
     },
+    "./ui": {
+      "types": "./dist/ui/index.d.ts",
+      "default": "./dist/ui/index.js"
+    },
     "./decode": {
       "types": "./dist/decode/index.d.ts",
       "default": "./dist/decode/index.js"
@@ -37,20 +41,26 @@
     "./decode/*": {
       "types": "./dist/decode/*.d.ts",
       "default": "./dist/decode/*.js"
+    },
+    "./ui/*": {
+      "types": "./dist/ui/*.d.ts",
+      "default": "./dist/ui/*.js"
     }
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json && node scripts/copy-json.mjs",
-    "watch": "node scripts/copy-json.mjs && tsc -p tsconfig.json --watch",
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig.ui.json && node scripts/copy-json.mjs",
+    "watch": "node scripts/copy-json.mjs && tsc -p tsconfig.ui.json && tsc -p tsconfig.json --watch",
     "test": "vitest run",
     "test:watch": "vitest",
     "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
     "sync-registers": "node scripts/sync-registers.mjs"
   },
   "devDependencies": {
+    "@types/react": "^18.2.42",
+    "react": "^18.2.0",
     "typescript": "5.9.3",
     "vitest": "^2.1.9"
   },
@@ -73,7 +83,16 @@
       ],
       "decode/*": [
         "./dist/decode/*.d.ts"
+      ],
+      "ui": [
+        "./dist/ui/index.d.ts"
+      ],
+      "ui/*": [
+        "./dist/ui/*.d.ts"
       ]
     }
+  },
+  "peerDependencies": {
+    "react": "^18.2.0"
   }
 }

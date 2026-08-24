@@ -42,5 +42,5 @@
     "verbatimModuleSyntax": false
   },
   "include": ["src"],
-  "exclude": ["src/**/__tests__/**", "dist", "node_modules"]
+  "exclude": ["src/**/__tests__/**", "src/ui", "dist", "node_modules"]
 }

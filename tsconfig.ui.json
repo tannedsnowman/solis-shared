@@ -1,0 +1,34 @@
+{
+  /*
+   * The UI half of the package: React cards, and nothing else.
+   *
+   * WHY THIS IS A SEPARATE TSCONFIG
+   * -------------------------------
+   * `tsconfig.json` deliberately omits "dom" from `lib` so that touching
+   * `window`, `document` or `localStorage` inside decode/gospel/settings is a
+   * COMPILE ERROR rather than a runtime surprise in whichever app imported
+   * the package second. That guard is the point of the package and must not
+   * be weakened.
+   *
+   * React cards genuinely need the DOM lib -- a `<div onClick>` does not
+   * typecheck without it. Widening the base config would hand DOM globals to
+   * decode/gospel/settings as well and quietly delete the guard. So the DOM
+   * lib is granted HERE, to `src/ui` only, and the logic modules keep
+   * compiling against ES2020 alone.
+   *
+   * The rule for anything under src/ui: it may use the DOM for RENDERING, but
+   * it must not read or write `localStorage`, call transport, or otherwise
+   * reach for app state. Cards take what they draw as props. Each app keeps
+   * its own back end and passes it in -- that is why these files can be
+   * shared at all.
+   */
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2020", "DOM"],
+    "jsx": "react-jsx",
+    "rootDir": "src",
+    "outDir": "dist"
+  },
+  "include": ["src/ui"],
+  "exclude": ["src/ui/**/__tests__/**", "dist", "node_modules"]
+}

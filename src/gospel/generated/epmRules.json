@@ -1,0 +1,91 @@
+{
+ "content_type": "register_rules",
+ "family": "epm",
+ "document": "Solis EPM (EPM-36000ID) — register behaviour rules",
+ "rules": {
+  "data:36009": {
+   "title": "EPM Power Total",
+   "kind": "value",
+   "summary": "Total power measured at the grid connection point, across all three phases. Negative means exporting to the grid.",
+   "write": "read_only",
+   "write_explain": "Measurement register. Read only.",
+   "gotcha": "This is a 32-bit register and it is LITTLE-endian — low word first, the opposite of every PV register. Decoding it big-endian does not fail loudly; it returns a plausible-looking number in the hundreds of thousands of kW. A live 3-phase site showed exactly that before the fix.",
+   "check": "The total must equal the sum of the three phase registers (36006, 36007, 36008), which are plain 16-bit and never affected by word order. If it does not, the word order is wrong.",
+   "related_registers": [
+    "data:36006",
+    "data:36007",
+    "data:36008"
+   ],
+   "sources": [
+    "V19 36009 description — 'Note: Little Endian Low first, High Latter'",
+    "serialTauriApp/src/mapper/__tests__/epmWordOrder.test.ts — live 3-phase capture, 2026-08-07"
+   ],
+   "confidence": "high"
+  },
+  "settings:36508": {
+   "title": "Backflow Power",
+   "kind": "value",
+   "summary": "How much power is allowed to flow back to the grid before the EPM starts limiting the inverters.",
+   "write": "plain",
+   "write_explain": "Write the value directly. Zero means no export is allowed at all.",
+   "gotcha": "The documents disagree on this register's sign — some print it U16 and some S16. A negative value only means anything if the sign is real, so a site that needs a negative backflow setting must be checked against the live reading rather than trusted from the map.",
+   "related_registers": [
+    "settings:36507",
+    "settings:36510"
+   ],
+   "sources": [
+    "Both apps' mappers, offset 8",
+    "U16/S16 split across the PV documents at 36508"
+   ],
+   "confidence": "medium"
+  },
+  "settings:36507": {
+   "title": "CT Ratio",
+   "kind": "value",
+   "summary": "Tells the EPM how big the current transformers (the clamps around the cable that measure current) are.",
+   "write": "plain",
+   "write_explain": "Write the ratio directly. A 200:1 CT is written as 200.",
+   "gotcha": "Every power and current reading is multiplied by this number. Getting it wrong scales the whole site's readings, and the EPM will limit at the wrong point — but nothing reports an error, because the readings still look like plausible numbers.",
+   "related_registers": [
+    "settings:36508",
+    "data:36001"
+   ],
+   "sources": [
+    "V19 36507 'CT ratio'"
+   ],
+   "confidence": "high"
+  },
+  "settings:36510": {
+   "title": "EPM Mode",
+   "kind": "enum",
+   "summary": "Picks how the EPM limits export.",
+   "write": "plain",
+   "write_explain": "Write the mode number directly. One mode runs at a time — this is a selector, not a set of flags.",
+   "gotcha": "EPM-AX uses this same address (36510) for 'Per-Phase Limiting', which is a plain on/off. Writing an EPM mode number to an AX unit sets something completely different. Always confirm which device is on the other end of the wire before writing here.",
+   "related_registers": [
+    "settings:36508",
+    "settings:36511"
+   ],
+   "sources": [
+    "Both apps' mappers, offset 10",
+    "ax.ts offset 10 is perPhaseLimiting"
+   ],
+   "confidence": "high"
+  },
+  "settings:36511": {
+   "title": "FailSafe ON/OFF",
+   "kind": "enum",
+   "summary": "When on, the inverters shut down if the EPM stops talking to them. Stops a site exporting freely after a comms failure.",
+   "write": "plain",
+   "write_explain": "0 is OFF, 1 is ON. Default is OFF.",
+   "gotcha": "EPM-AX reuses this address for a five-value FailSafe mode, and the two apps do not agree on what those five values mean. The simple 0/1 documented here is the EPM meaning only.",
+   "related_registers": [
+    "settings:36510"
+   ],
+   "sources": [
+    "V19 36511 — '0->OFF 1->ON Default:OFF'"
+   ],
+   "confidence": "high"
+  }
+ }
+}

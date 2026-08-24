@@ -18,20 +18,41 @@
     "./gospel": {
       "types": "./dist/gospel/index.d.ts",
       "default": "./dist/gospel/index.js"
+    },
+    "./gospel/generated/*.json": {
+      "default": "./dist/gospel/generated/*.json"
+    },
+    "./settings": {
+      "types": "./dist/settings/index.d.ts",
+      "default": "./dist/settings/index.js"
     }
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "watch": "tsc -p tsconfig.json --watch",
+    "build": "tsc -p tsconfig.json && node scripts/copy-json.mjs",
+    "watch": "node scripts/copy-json.mjs && tsc -p tsconfig.json --watch",
     "test": "vitest run",
     "test:watch": "vitest",
-    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\""
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
+    "sync-registers": "node scripts/sync-registers.mjs"
   },
   "devDependencies": {
     "typescript": "5.9.3",
     "vitest": "^2.1.9"
+  },
+  "typesVersions": {
+    "*": {
+      "decode": [
+        "./dist/decode/index.d.ts"
+      ],
+      "gospel": [
+        "./dist/gospel/index.d.ts"
+      ],
+      "settings": [
+        "./dist/settings/index.d.ts"
+      ]
+    }
   }
 }

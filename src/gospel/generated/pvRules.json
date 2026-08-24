@@ -1,0 +1,681 @@
+{
+ "content_type": "register_rules",
+ "family": "pv",
+ "document": "PV Grid-Connected Inverter — register behaviour rules",
+ "rules": {
+  "settings:3007": {
+   "title": "Inverter ON/OFF",
+   "kind": "enum",
+   "summary": "Magic-code start/stop. Not a boolean — writing 1 or 0 does nothing.",
+   "write": "plain",
+   "unlock_value": 190,
+   "write_explain": "0xBE (190) turns the inverter ON. 0xDE (222) turns it OFF. No other value has any effect, so a generic Enabled/Disabled control writing 1/0 silently does nothing at all.",
+   "gotcha": "Turning the inverter OFF stops generation immediately. On a live site this is a visible outage, so it needs a confirmation step even though it is reversible.",
+   "sources": [
+    "V19 3007 description",
+    "extension ON_OFF map"
+   ],
+   "confidence": "high",
+   "register": 3007,
+   "space": "settings",
+   "key": "onOff",
+   "name": "ON/OFF",
+   "wire_address": 3006
+  },
+  "settings:3027": {
+   "title": "DRM ON/OFF",
+   "kind": "enum",
+   "summary": "Magic-code switch. Turning DRM on silently turns EPM off.",
+   "write": "plain",
+   "unlock_value": 170,
+   "write_explain": "0x00AA (170) on, 0x0000 (0) off. Writing 1 does nothing.",
+   "gotcha": "The description states that enabling DRM turns the EPM function off automatically. Anyone relying on export limiting will lose it without being told.",
+   "related_registers": [
+    "settings:3151"
+   ],
+   "sources": [
+    "V19 3027 description"
+   ],
+   "confidence": "high",
+   "register": 3027,
+   "space": "settings",
+   "key": "drmOnOff",
+   "name": "DRM ON/OFF",
+   "wire_address": 3026
+  },
+  "settings:3028": {
+   "title": "Restart the HMI",
+   "kind": "destructive",
+   "summary": "Reboots the display. Needs a magic value, and needs it three times.",
+   "write": "single_register_only",
+   "unlock_value": 43605,
+   "write_explain": "Write 0xAA55 (43605) with function code 0x06 only — never inside a 0x10 block write. It takes effect only if sent successfully three times within 6 seconds; any other value is ignored.",
+   "gotcha": "This register was keyed 'add35000' in both apps and is NOT a model-number setting. See the map's note. Restarting the HMI drops the display session.",
+   "sources": [
+    "six documents, 3028 description"
+   ],
+   "confidence": "high",
+   "register": 3028,
+   "space": "settings",
+   "key": "restartHmi",
+   "name": "Restart the HMI",
+   "wire_address": 3027
+  },
+  "settings:3033": {
+   "title": "VRT Enable Switch",
+   "kind": "bitfield",
+   "summary": "Five independent ride-through switches in one word, most defaulting to ON.",
+   "bit_groups": [
+    {
+     "name": "Ride-through enables",
+     "rule": "mutually_exclusive",
+     "bits": null,
+     "explain": "Each bit is its own standard's ride-through and any combination is valid. BIT00 LVRT defaults OFF; BIT01-BIT04 default ON.",
+     "bit_labels": {
+      "0": "LVRT",
+      "1": "US Rule21 VRT",
+      "2": "US Rule21 FRT",
+      "3": "Brazil LVRT",
+      "4": "BDEW LVRT"
+     }
+    }
+   ],
+   "write": "read_modify_write",
+   "write_explain": "Read the word, change only your bit, write it back. A blind write of 1 sets LVRT on and turns the other four OFF, disabling ride-through for US Rule21, Brazil and BDEW at once.",
+   "gotcha": "Tauri renders this as a plain Enabled/Disabled, which cannot express four of the five switches and turns them off on any write.",
+   "sources": [
+    "V19 3033 description"
+   ],
+   "confidence": "high",
+   "register": 3033,
+   "space": "settings",
+   "key": "vrtEnableSwitch",
+   "name": "VRT Enable Switch",
+   "wire_address": 3032
+  },
+  "settings:3051": {
+   "title": "Reactive Power Limitation",
+   "kind": "value",
+   "summary": "Only takes effect while Working Mode is 04 (Fix reactive power).",
+   "write": "write_together",
+   "write_with": [
+    "settings:3073"
+   ],
+   "write_explain": "Select working mode 04 in 3073 first. Writing this register in any other mode is accepted but does nothing. The register is scaled 0.01% -- the raw word is hundredths of a percent, so 6000 IS 60% and 100 is 1%. Documented range -60% to +60%, i.e. raw -6000..+6000.",
+   "applies_when": "Working Mode (settings:3073) == 4",
+   "related_registers": [
+    "settings:3073",
+    "settings:3071"
+   ],
+   "sources": [
+    "V19 3051 description - 'Only available for working mode 04'",
+    "V18/V19 3051 unit column - '0.01%'",
+    "correction 2026-08-22 - scale was 1, should be 0.01"
+   ],
+   "confidence": "high",
+   "gotcha": "The map carried scale 1 until 2026-08-22, so a screen showed the raw 6000 where the inverter means 60%, and a user typing 60 would have written 0.6%. The register's own description says '10000 <--> 100%' and twelve other PV percentage registers with identical wording already derived 0.01; the unit COLUMN is what disagreed, printing '0.01%' in V18/V19 but '1%' in V17 and the older Grid-Tied files.",
+   "register": 3051,
+   "space": "settings",
+   "key": "reactivePowerLimitation",
+   "name": "Reactive power limitation",
+   "wire_address": 3050
+  },
+  "settings:3053": {
+   "title": "Power Factor Setting",
+   "kind": "value",
+   "summary": "Signed power factor. The sign carries the leading/lagging meaning, and both ends of the range mean unity. This is the working-mode-03 PF register; the 0xA2 unlock belongs to 3054, NOT to this one.",
+   "write": "write_together",
+   "write_with": [
+    "settings:3073"
+   ],
+   "write_explain": "Scaled by 1000: 800 means 0.80, 1000 means 1.00, -800 means -0.80. Note that PF 1.00 and -1.00 are the SAME operating point, so an interface must not present them as two choices. Selected by working mode 03 in settings:3073. Power-off saving is 3069 BIT01.",
+   "applies_when": "Working Mode (settings:3073) == 3",
+   "related_registers": [
+    "settings:3073",
+    "settings:3054",
+    "settings:3069"
+   ],
+   "sources": [
+    "V19 3053 description",
+    "correction 2026-08-22 - 0xA2 belongs to 3054, per 3071 and 3054"
+   ],
+   "confidence": "high",
+   "gotcha": "CORRECTED 2026-08-22: this rule previously claimed 3071 == 0xA2 enabled this register. It does not. The description of 3071 says '0xA2 PF 02 setting effective (for 3054 Reg)' - a PRINTED address - so 0xA2 enables settings:3054, and 3054 agrees: 'To enable 3054, need to enable 3071 A2'. Nothing in any document ties 0xA2 to this register. Some documents also note that models of 15 kW and below do not have this function at all.",
+   "register": 3053,
+   "space": "settings",
+   "key": "pfSetting",
+   "name": "PF Setting",
+   "wire_address": 3052
+  },
+  "settings:3054": {
+   "title": "PF Setting 02 (Actual Power Factor Adjustment)",
+   "kind": "value",
+   "summary": "The power factor register the 0xA2 reactive-power unlock enables. Writing it switches the inverter into working mode 03 by itself.",
+   "write": "write_together",
+   "write_with": [
+    "settings:3071"
+   ],
+   "write_explain": "Set settings:3071 to 0xA2 (162) FIRST, then write this register. Scaled by 1000: 800 means 0.80, 1000 means 1.00, -800 means -0.80. PF 1.00 and -1.00 are the SAME operating point and must not be offered as two choices. Power-off saving is 3069 BIT03.",
+   "applies_when": "Reactive Power Switch (settings:3071) == 0xA2 (162)",
+   "gotcha": "Using this function SWITCHES THE INVERTER TO WORKING MODE 03 on its own - the description says so plainly. Whatever reactive mode was running stops. Two registers carry a power factor and only this one answers to 0xA2; settings:3053 is the working-mode-03 register selected through 3073.",
+   "related_registers": [
+    "settings:3071",
+    "settings:3073",
+    "settings:3053",
+    "settings:3069"
+   ],
+   "sources": [
+    "V19 3054 description - 'To enable 3054, need to enable 3071 A2'",
+    "V19 3071 description - '0xA2 PF 02 setting effective (for 3054 Reg)'"
+   ],
+   "confidence": "high",
+   "register": 3054,
+   "space": "settings",
+   "key": "pfSetting02",
+   "name": "Actual power factor adjustment",
+   "wire_address": 3053
+  },
+  "settings:3069": {
+   "title": "Power-Off Saving Function",
+   "kind": "bitfield",
+   "summary": "A per-register save-to-flash bitfield, one bit per protected register. Must be set BEFORE the value it protects.",
+   "independent_bits": [
+    0,
+    1,
+    2,
+    3
+   ],
+   "independent_explain": "Four independent save switches, one per register, freely combinable. This is NOT a selector and NOT an enum -- the raw value 3 means 'save 3052 and 3053', not 'both modes'. The addresses are PRINTED addresses, not wire addresses. BIT04-BIT15 reserved.",
+   "bit_notes": {
+    "0": "1 = the active power percentage (3052) survives a power cycle. The later documents add 3149, 3150 and 3157 to this bit.",
+    "1": "1 = the PF Setting (3053) survives a power cycle.",
+    "2": "1 = the reactive power limitation (3051) survives a power cycle, along with the working mode (3073) and the 3130-3146 block.",
+    "3": "1 = PF Setting 02 (3054) survives a power cycle, along with the working mode (3073) and the 3130-3146 block. This is the bit that pairs with the 0xA2 unlock on 3071."
+   },
+   "write": "read_modify_write",
+   "write_explain": "Enable the bit for the register you are about to change, then write that register. Read the word, change only your bit, write the whole word back -- a blind write clears everyone else's bits.",
+   "gotcha": "Without the matching bit set, a write to the protected register lands in RAM ONLY and is lost at power-off. This is the usual cause of 'the setting reverted after a reboot' -- the write succeeded, nothing was saving it. DO NOT toggle these bits repeatedly: the documents warn the flash is rated for under 10000 writes.",
+   "related_registers": [
+    "settings:3051",
+    "settings:3052",
+    "settings:3053",
+    "settings:3054",
+    "settings:3073",
+    "settings:3071"
+   ],
+   "related_explain": "BIT00 -> 3052, BIT01 -> 3053, BIT02 -> 3051 (+3073), BIT03 -> 3054 (+3073). All PRINTED addresses.",
+   "sources": [
+    "V16-V19 and the three Grid-Tied documents 3069 description",
+    "correction 2026-08-22 - Ver.3.7 is the lone dissenter and loses"
+   ],
+   "confidence": "high",
+   "register": 3069,
+   "space": "settings",
+   "key": "powerOffSavingFunction",
+   "name": "Power-off saving function",
+   "wire_address": 3068,
+   "independent_bit_labels": {
+    "0": "Save Active Power % (3052) on power off",
+    "1": "Save PF Setting (3053) on power off",
+    "2": "Save Reactive Power (3051, 3073) on power off",
+    "3": "Save PF Setting 02 (3054, 3073) on power off"
+   }
+  },
+  "settings:3070": {
+   "title": "Active Power Switch",
+   "kind": "enum",
+   "summary": "Magic-code switch that gates the active-power limit registers. Not a 0/1 boolean.",
+   "write": "plain",
+   "unlock_value": 170,
+   "write_explain": "0xAA (170) enables the active-power limit registers — printed 3052 and 3081 (the description's '3051 and 3080' are wire addresses). 0x55 (85) turns the limit off and returns power to 100%. Writing 1 does NOTHING — both apps' generic 'Enabled/Disabled' rendering was wrong here, and Tauri still carries it.",
+   "gotcha": "This register participates in the power-off saving function (3069). A value set here is lost on power cycle unless the matching save bit is set first.",
+   "related_registers": [
+    "settings:3052",
+    "settings:3081",
+    "settings:3069"
+   ],
+   "sources": [
+    "all five documents",
+    "extension ACTIVE_POWER_SWITCH_MAP"
+   ],
+   "confidence": "high",
+   "off_value": 85,
+   "register": 3070,
+   "space": "settings",
+   "key": "powerLimitationSwitch",
+   "name": "Active power switch",
+   "wire_address": 3069
+  },
+  "settings:3071": {
+   "title": "Reactive Power Switch",
+   "kind": "enum",
+   "summary": "Three-way magic-code switch. The two ON codes enable DIFFERENT registers.",
+   "write": "plain",
+   "write_explain": "0x55 (85) off - PF returns to 1 and reactive to 0. 0xA1 (161) makes the reactive setting effective and forces PF to 1, for registers 3051 and 3083. 0xA2 (162) makes PF 02 effective and forces reactive to 0, for register 3054. The two ON codes are not interchangeable: picking the wrong one leaves the register you meant to use inert. These are PRINTED addresses - the description states them directly. Applies to the 5-25K / 25-50K / 50-70K series.",
+   "gotcha": "Not a boolean. Tauri renders this as Enabled/Disabled, which cannot express the 0xA1-versus-0xA2 choice at all.",
+   "related_registers": [
+    "settings:3051",
+    "settings:3054",
+    "settings:3083",
+    "settings:3069"
+   ],
+   "sources": [
+    "all five documents",
+    "extension REACTIVE_POWER_CONTROL_SWITCH_MAP"
+   ],
+   "confidence": "high",
+   "off_value": 85,
+   "unlock_values": {
+    "161": "0xA1 - reactive setting effective, PF forced to 1 (settings:3051 and settings:3083)",
+    "162": "0xA2 - PF 02 setting effective, reactive forced to 0 (settings:3054)"
+   },
+   "register": 3071,
+   "space": "settings",
+   "key": "reactivePowerSwitch",
+   "name": "Reactive power switch",
+   "wire_address": 3070
+  },
+  "settings:3072": {
+   "title": "Day Time PID Switch",
+   "kind": "enum",
+   "summary": "Magic-code switch for the daytime anti-PID function. Not a boolean -- writing 1 does nothing.",
+   "write": "plain",
+   "unlock_value": 170,
+   "off_value": 85,
+   "write_explain": "0xAA (170) ON, 0x55 (85) OFF. Default OFF. Any other value is ignored, so a generic Enabled/Disabled control writing 1/0 is inert here -- the same shape as the switches at 3070 and 3071 beside it.",
+   "gotcha": "The document restricts this to the 255K series and says it must be set together with the Day Time PID Solution -- turning it on where no anti-PID hardware is fitted does nothing useful.\n\nThe map read this register's NAME as 'Working Status' until 2026-08-22. That is the read-only DATA register at the same printed address, which bled across the space collision; anything that presented it as a 20-state status enum was showing a control it could not write as a reading it could not change.",
+   "related_registers": [
+    "settings:3070",
+    "settings:3071"
+   ],
+   "sources": [
+    "V17 p20 '3072 Day Time PID Switch U16 0xAA ON'",
+    "Grid-Tied 2022.1.20 p30 '0xAA ON, 0x55 OFF, Default: OFF'"
+   ],
+   "confidence": "high",
+   "register": 3072,
+   "space": "settings",
+   "key": "dayTimePidSwitch",
+   "name": "Day Time PID Switch",
+   "wire_address": 3071
+  },
+  "settings:3073": {
+   "title": "Working Mode",
+   "kind": "enum",
+   "summary": "One selector for the reactive-power behaviour. Exactly one mode runs at a time, and several other registers only work while their own mode is selected.",
+   "write": "plain",
+   "write_explain": "Write the mode number directly. Only one mode is active at any time — this is a selector, not a set of flags, so an interface must offer radio buttons and never checkboxes.",
+   "enables": [
+    {
+     "mode": 3,
+     "label": "Fixed power factor",
+     "registers": [
+      "settings:3053"
+     ]
+    },
+    {
+     "mode": 4,
+     "label": "Fix reactive power",
+     "registers": [
+      "settings:3051"
+     ]
+    }
+   ],
+   "gotcha": "Registers 3051 and 3053 look writable at any time and are not. 3051's own description says 'Only available for working mode 04'. Set the mode FIRST, then the value, or the write is silently ignored.\n\nThe value_map was MISSING code 06 (Rule21 Volt-watt) until 2026-08-22, so a US machine sitting in that mode rendered as an unknown raw 6. The codes are not contiguous either: they run 00-06 and then jump to 0C (12) for P-Q, which first appears in V17. An interface must not assume a dense range.",
+   "related_registers": [
+    "settings:3051",
+    "settings:3053",
+    "settings:3069"
+   ],
+   "sources": [
+    "V19 p33 3073 description (00-06 and 0C)",
+    "extension SETTING_WORKING_MODE_MAP",
+    "correction 2026-08-22 - code 06 was missing from the value_map"
+   ],
+   "confidence": "high",
+   "register": 3073,
+   "space": "settings",
+   "key": "workingMode",
+   "name": "Working mode",
+   "wire_address": 3072
+  },
+  "settings:3080": {
+   "title": "Power Control Word",
+   "kind": "bitfield",
+   "summary": "Two documented switches in one word: the max-power ceiling flag and the remote active-power limit enable. Not an enum.",
+   "independent_bits": [
+    0,
+    2
+   ],
+   "independent_explain": "Two unrelated flags. BIT01 is reserved and BIT03-BIT15 are undocumented -- preserve them all. Neither bit is inverted.",
+   "bit_notes": {
+    "0": "Max power limit flag. 0 = the default 1.09 x rated power (but 1.00 x rated for the 4777-A/B/C/N, UL and Mexican grid codes, which receive 0 and read it as 1.00). 1 = 1.10 x rated power. Set once from the HMI or over 485 and the ARM saves it to flash and re-sends it to the DSP on every power-up.",
+    "2": "Remote active power limit enable. 1 = enabled, 0 = disabled, default 0. Works with settings:3031, the remote active-power percentage. Needs power-off saving, and while this bit is 1 the percentage must be re-sent after each power-up."
+   },
+   "write": "read_modify_write",
+   "write_explain": "Read the word, change only your bit, write it back. BIT01 is reserved and the upper bits are undocumented; a bare write stamps them.",
+   "gotcha": "The map carried a value_map reading this word as an enum ({0 Disabled, 1 Remote Active P Limit, 2 Remote Reactive P, 3 Remote PF}) - the same enum-over-bitfield mistake as 3069. Under it, writing 1 to get 'Remote Active P Limit' actually sets BIT00 and raises the power ceiling to 1.10 x rated, while the remote limit (BIT02, value 4) stays off. 'Remote Reactive P' and 'Remote PF' are in no document at all.",
+   "related_registers": [
+    "settings:3031",
+    "settings:3069"
+   ],
+   "sources": [
+    "V17/V18/V19 and Grid-Tied 2022.1.20 3080 description",
+    "correction 2026-08-22 - value_map was an enum reading of a bitfield"
+   ],
+   "confidence": "high",
+   "register": 3080,
+   "space": "settings",
+   "key": "powerControlWord",
+   "name": "Power control word",
+   "wire_address": 3079,
+   "independent_bit_labels": {
+    "0": "Max Power Limit Flag (0=1.09 rated P, 1=1.10 rated P)",
+    "2": "Remote Active Power Limit Enable (needs 3031)"
+   }
+  },
+  "settings:3084": {
+   "title": "Leakage Current Protection Level",
+   "kind": "value",
+   "summary": "The trip level for the leakage-current protection switched by 3312 BIT03. Inert while that protection is disabled.",
+   "write": "plain",
+   "write_explain": "Whole milliamps, scale 1. Range 50-800 mA, default 240 mA. Raising it makes the inverter tolerate more residual current before it trips.",
+   "applies_when": "Special Control Word 02 (settings:3312) BIT03 == 0, i.e. leakage current protection ENABLED (the bit is active-low)",
+   "gotcha": "This register accepts and stores a value even when the protection bit has it turned off, so a screen can show a healthy 240 mA next to a protection that is not running. Show the 3312 BIT03 state beside it.",
+   "related_registers": [
+    "settings:3312"
+   ],
+   "sources": [
+    "V19 3084 description"
+   ],
+   "confidence": "high",
+   "register": 3084,
+   "space": "settings",
+   "key": "leakageCurrentProtection",
+   "name": "Leakage current protection",
+   "wire_address": 3083
+  },
+  "settings:3085": {
+   "title": "PV Insulation Impedance Protection Level",
+   "kind": "value",
+   "summary": "The insulation-resistance threshold checked before the inverter connects. Pairs with the grounding protection in 3312 BIT04.",
+   "write": "plain",
+   "write_explain": "Whole kilo-ohms, scale 1. Range 20k-1000k, default 200k. LOWERING this makes the inverter accept a worse-insulated array — it is not a fix for a real insulation fault, it is a way of ignoring one.",
+   "applies_when": "Special Control Word 02 (settings:3312) BIT04 == 0, i.e. grounding protection ENABLED (the bit is active-low)",
+   "gotcha": "As with 3084, the value stays set while the protection bit has the check turned off, so the number on screen does not tell you the check is running.",
+   "related_registers": [
+    "settings:3312"
+   ],
+   "sources": [
+    "V19 3085 description"
+   ],
+   "confidence": "high",
+   "register": 3085,
+   "space": "settings",
+   "key": "pvInsulationProtection",
+   "name": "PV insulation protection",
+   "wire_address": 3084
+  },
+  "settings:3089": {
+   "title": "Grid Code Accuracy Set Flag",
+   "kind": "value",
+   "summary": "Two bytes with different rules. The low byte selects the units the grid-code protection registers are expressed in; the high byte is READ-ONLY and, when non-zero, locks the low byte.",
+   "write": "plain",
+   "write_explain": "READ THIS REGISTER FIRST, always, before reading or writing any grid-code protection value — the numbers in those registers mean different things depending on what it says. Low byte 0x0000: voltage 1 V, time 0.1 s, frequency 0.1 Hz. Low byte 0x0001: voltage 0.1 V, time 0.01 s, frequency 0.01 Hz. If the whole value is greater than 255 the high byte is set and the register CANNOT be modified: 0x01xx means a single rule fixed at voltage 0.1 V, time 0.02 s, frequency 0.01 Hz (the IEEE1547 UL-208V-A2 / UL-240V-A2 addition). The value is not saved at power off.",
+   "gotcha": "Getting this wrong scales every grid-code threshold by ten. A trip point read as 253 V under the wrong assumption is really 25.3 V or 2530 V. Never write a grid-code protection value without reading this register in the same session.",
+   "sources": [
+    "2022.1.20 Grid-Tied 3089 description"
+   ],
+   "confidence": "high",
+   "register": 3089,
+   "space": "settings",
+   "key": "gridCodeAccuracySetFlag",
+   "name": "Grid code accuracy set flag",
+   "wire_address": 3088
+  },
+  "settings:3118": {
+   "title": "Overvoltage P Control Switch",
+   "kind": "bitfield",
+   "summary": "Two independent switches for the Italian and Polish PN50549 requirements.",
+   "bit_groups": [
+    {
+     "name": "Overvoltage control",
+     "rule": "mutually_exclusive",
+     "bits": null,
+     "explain": "BIT00 overvoltage active-power automatic limit (default off). BIT01 Vref control enable, which governs registers 3126-3127 (default off). Independent of each other.",
+     "bit_labels": {
+      "0": "Overvoltage active power automatic limit",
+      "1": "Vref control enable (3126-3127)"
+     }
+    }
+   ],
+   "write": "read_modify_write",
+   "write_explain": "Read, change your bit, write back. BIT02-15 are reserved and must be preserved.",
+   "related_registers": [
+    "settings:3126"
+   ],
+   "sources": [
+    "V19 3118 description"
+   ],
+   "confidence": "high",
+   "register": 3118,
+   "space": "settings",
+   "key": "overvoltagePControlSwitch",
+   "name": "Working mode control switch",
+   "wire_address": 3117
+  },
+  "settings:3151": {
+   "title": "Internal EPM Switch",
+   "kind": "enum",
+   "summary": "MODEL-DEPENDENT. The same number means different things on different inverters.",
+   "write": "plain",
+   "write_explain": "There is no single code table. 0.7-8K1P: 01 Current Sensor, 02 Meter in Grid, 03 Meter in Load, 04 24H consumption, 05 EPM OFF. 3-20K 3P: 01 Meter in Grid, 02 Meter in Load, 03 24H consumption, 04 EPM OFF. 25-50K / 50-70K / 80-110K: 01 Meter in Grid, 02 Meter in Load, 03 EPM OFF, 04 24H consumption.",
+   "gotcha": "Because the tables differ, a value written against the wrong model can select a completely different EPM mode — on a 3-20K, 04 is EPM OFF, while on a 0.7-8K1P the same 04 is 24H consumption. The map stores NO value_map for this register on purpose. Read the model from 35000 first.",
+   "related_registers": [
+    "model:35000",
+    "settings:3153",
+    "settings:3027"
+   ],
+   "sources": [
+    "V19 3151 description"
+   ],
+   "confidence": "high",
+   "register": 3151,
+   "space": "settings",
+   "key": "internalEpmSwitch",
+   "name": "Internal EPM Switch (EPM Soft Switch for AU 2020 Code)",
+   "wire_address": 3150
+  },
+  "settings:3159": {
+   "title": "Factory Reset",
+   "kind": "destructive",
+   "summary": "Magic-code factory reset. Clears alarms, special settings and the grid code.",
+   "write": "plain",
+   "unlock_value": 170,
+   "write_explain": "Write 0x00AA (170) to trigger. 0x0000 is the idle state and the default. No other value does anything.",
+   "destructive": true,
+   "destructive_explain": "Three things go at once: alarm history is cleared, every special setting returns to default, and the GRID CODE returns to default. The last one is the dangerous half — the inverter comes back on a grid code that may not be the one the site is certified to. Read and save the grid code and every special setting first; there is no undo.",
+   "gotcha": "The map's value_map labels 43605 (0xAA55) as the trigger. That is the HMI restart code from 3028, not this register's. The description for 3159 says 0x00AA.",
+   "related_registers": [
+    "settings:3312",
+    "settings:3304"
+   ],
+   "sources": [
+    "V19 3159 description"
+   ],
+   "confidence": "high",
+   "register": 3159,
+   "space": "settings",
+   "key": "factoryReset",
+   "name": "Factory Reset",
+   "wire_address": 3158
+  },
+  "settings:3175": {
+   "title": "PV Insulation Fault Non-Stop / Clear Fault",
+   "kind": "destructive",
+   "summary": "Two things in one register: a persistent switch deciding whether a PV insulation fault stops the inverter, and a momentary code that clears latched fault information.",
+   "write": "plain",
+   "write_explain": "0x00 (0) non-stop OFF -- the inverter STOPS on a PV insulation fault. 0x01 (1) non-stop ON -- it keeps running through one. Both are saved across a power cycle. 0x2A (42) is not a state at all: it clears the latched fault information and is explicitly NOT saved at power off, so it behaves as a one-shot button, not a third setting. Default is 0. An interface must present 0/1 as a switch and 0x2A as a separate action, never as three items in one dropdown.",
+   "destructive": true,
+   "destructive_explain": "0x2A DISCARDS DIAGNOSTIC STATE. The latched insulation-fault information is the evidence of what went wrong; clearing it before it has been read loses the only record on the machine. Read and record the fault first -- there is no undo. Treat it like the factory reset (3159) and the generation wipe (3300).\n\nSetting the non-stop switch to 0x01 is its own hazard and is NOT a fault fix: it makes the inverter keep running with a PV insulation fault present. Insulation failure is an earth-leakage condition, so this is a safety-relevant setting, not a nuisance-trip workaround.",
+   "gotcha": "SolisCloud's Device Maintenance page shows TWO 'Set' rows on this one address -- 'CLear PV ISO-PRO' and a truncated 'CLear PVGndRun ...'. The documents substantiate only ONE clear code, 0x2A, for the PV insulation fault. No document in this corpus mentions PVGndRun, a ground-run lockout, or a second clear code, so what the second row writes is UNKNOWN. Do not offer it until it is proven on the wire; guessing a value here writes to a live machine's fault state.",
+   "related_registers": [
+    "settings:3312",
+    "settings:3085"
+   ],
+   "related_explain": "The PV insulation protection this register reacts to is switched by settings:3312 BIT04 (grounding protection, active-low) and its threshold is settings:3085 in kOhm. Turning the protection off there is a different act from letting the inverter run through a fault here.",
+   "sources": [
+    "V19 p43 register 3175, read from the PDF directly",
+    "SolisCloud Device Maintenance page (two rows at Modbus 3175)"
+   ],
+   "confidence": "high",
+   "register": 3175,
+   "space": "settings",
+   "key": "noRestartFunctionAfterShutdownDueToPvInsulationFailure",
+   "name": "No restart function after shutdown due to PV insulation failure",
+   "wire_address": 3174
+  },
+  "settings:3300": {
+   "title": "Clear Generation Data",
+   "kind": "destructive",
+   "summary": "Magic-code wipe of the inverter's accumulated generation totals.",
+   "write": "plain",
+   "unlock_value": 21930,
+   "write_explain": "Write 0x55AA (21930). No other value does anything.",
+   "destructive": true,
+   "destructive_explain": "Erases the lifetime and period generation counters held by the inverter. There is no undo and no way to restore the figures from the inverter afterwards. If the site is paid on generation, export the totals before doing this.",
+   "sources": [
+    "V19 3300 description"
+   ],
+   "confidence": "high",
+   "register": 3300,
+   "space": "settings",
+   "key": "clearGenerationData",
+   "name": "Clear Generation Data",
+   "wire_address": 3299
+  },
+  "settings:3304": {
+   "title": "Special Function Control Word 01",
+   "kind": "bitfield",
+   "summary": "Six function switches in one word, three of them ACTIVE-LOW. Not to be confused with Special Control Word 02 at 3312, which holds the protections.",
+   "independent_bits": [
+    0,
+    1,
+    2,
+    5
+   ],
+   "independent_explain": "Freely combinable switches. BIT00 and BIT01 are INVERTED in the sense that the bit SET turns the function OFF, and BIT05 is inverted too (1 = L-ground fault detection disabled). BIT02 is the only one that reads the ordinary way. BIT03-BIT04 are the AFCI self-check pair and are handled as a group, not as free bits. BIT06-BIT15 are reserved.",
+   "bit_notes": {
+    "0": "Boost 'not working' OFF control. Inverted: 0 = ON (normal), 1 = OFF, which means the boost stage runs continuously. Default 0.",
+    "1": "DC injection adjustment off control. Inverted: 0 = ON (normal), 1 = OFF, which stops DC injection adjustment. The description marks this as a TEST setting — it is not a field adjustment. Default 0.",
+    "2": "0% power relay trip. Not inverted: 0 = disabled, 1 = enabled, default 0. With this on, the AC relay physically disconnects whenever the power limit is set to 0%.",
+    "5": "Inverted: 0 = L-ground fault detection ENABLED, 1 = disabled. Default 0. Present in the 2021.5.6 Grid-Tied document; the later V17-V19 descriptions stop before this bit."
+   },
+   "bit_groups": [
+    {
+     "name": "AFCI self-check",
+     "rule": "at_most_one",
+     "bits": [
+      3,
+      4
+     ],
+     "explain": "The AFCI (arc fault) self-check trigger. The 2021.5.6 document gives BIT03-BIT04 as a two-bit field; V18/V19 instead describe BIT03 alone as 'AFCI self-inspection control bit, 0 = no self-inspection, 1 = start'. The documents disagree, so treat this as a momentary TRIGGER and not a persistent setting. Starting a self-check shuts the inverter down first, then runs the test and reports a result — do not offer it as a checkbox.",
+     "bit_labels": {
+      "3": "AFCI Self-Check",
+      "4": "AFCI Self-Check"
+     }
+    }
+   ],
+   "write": "read_modify_write",
+   "write_explain": "Read the register, change only your bit, write the whole word back. A bare write clears every other function switch. The word is power-off saving in its own right, per the description header.",
+   "gotcha": "Tauri's map labelled BIT03 'PV Priority Discharge' and BIT06 'Per-Phase Backflow Control'. Neither function exists in any PV document — they are HYBRID labels copied onto a PV register, and neither sits on the bit the PV description assigns. BIT03 is the AFCI self-check and BIT06 is reserved. Any UI built on the old labels wrote AFCI self-check while claiming to change discharge priority.",
+   "sources": [
+    "V18 3304 description",
+    "2021.5.6 Grid-Tied 3304 description — the only one reaching BIT05",
+    "field correction 2026-08-22 — Tauri bit_flags were hybrid labels"
+   ],
+   "confidence": "medium",
+   "register": 3304,
+   "space": "settings",
+   "key": "specialFunctionControlWord",
+   "name": "Special Function Control Word 01",
+   "wire_address": 3303,
+   "independent_bit_labels": {
+    "0": "Boost Not Working (0=Boost ON, 1=Boost always working)",
+    "1": "DC Injection Adjustment (0=ON, 1=OFF)",
+    "2": "0% Power Relay Trip (0=Disable, 1=Enable)",
+    "5": "L-Ground Fault Detection (0=Enable, 1=Disable)"
+   }
+  },
+  "settings:3312": {
+   "title": "Special Control Word 02 — protection switches",
+   "kind": "bitfield",
+   "summary": "The PV Protect Setting word. Five of the seven bits are ACTIVE-LOW: for Relay, Leakage Current, Grounding, Grid Disturbance 02 and Grid Current Sampling AD, the bit SET means the protection is DISABLED. Anything that prints the raw bit tells a fitter a protection is ON at the exact moment it is off.",
+   "independent_bits": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+   ],
+   "independent_explain": "Seven unrelated switches sharing one word, freely combinable. Bits 2, 3, 4, 5 and 6 are INVERTED (1 = protection disabled); bits 0 and 1 follow the usual 0 = off, 1 = on. BIT07-BIT15 are reserved.",
+   "bit_notes": {
+    "0": "Constant-voltage MPPT mode. Not inverted: 0 = disabled, 1 = enabled, default 0. Register 3313 carries the voltage and must be set alongside it.",
+    "1": "Multi-channel MPPT parallel. Not inverted: 0 = each channel tracks independently, 1 = channels run in parallel. Default 0. A wiring fact, not a protection.",
+    "2": "Inverted: 0 = relay protection ENABLED, 1 = disabled. Default 0.",
+    "3": "Inverted: 0 = leakage-current protection ENABLED, 1 = disabled. Default 0. The trip level is a separate register, settings:3084, in mA.",
+    "4": "Inverted: 0 = grounding protection ENABLED, 1 = disabled. Default 0. The PV insulation impedance threshold that goes with earth-fault detection is settings:3085, in kOhm.",
+    "5": "Inverted: 0 = grid disturbance 02 protection ENABLED (wave-by-wave current limiting on), 1 = disabled. Note the DEFAULT for this bit is 1, unlike every other protection bit in the word — out of the box this protection is OFF.",
+    "6": "Inverted: 0 = grid current sampling AD anomaly protection (IgADCheckPro) ENABLED, 1 = disabled. Default 0. The description also records a compatible reading of this bit as 'grid current DC component protection enable' with the OPPOSITE sense (0 = not enabled, 1 = enabled), which is firmware dependent. Treat this bit as the least trustworthy in the word and do not expose it without reading it back."
+   },
+   "write": "read_modify_write",
+   "write_explain": "Read the register, change only your bit, write the whole word back. A bare write clears every other bit — which on this register means silently re-enabling or disabling relay, leakage and grounding protection at once. The word is saved across a power cycle by the inverter itself; it does NOT need the 3069 power-off saving bits.",
+   "gotcha": "Tauri's map carried four labels here ('Overload Protection Enhanced', Reserved x3) against a seven-bit word, and the first label appears in no PV document. Any UI built on those labels put the protections on the wrong bits. The labels now come from the register's own description.",
+   "related_registers": [
+    "settings:3313",
+    "settings:3084",
+    "settings:3085"
+   ],
+   "related_explain": "BIT00 needs settings:3313, the constant-voltage MPPT set-point. BIT03 switches leakage-current protection; settings:3084 sets its trip level in mA. settings:3085 holds the PV insulation impedance threshold in kOhm. Clearing a protection bit leaves its level register set but inactive.",
+   "sources": [
+    "V18 3312 description",
+    "V19 3312 description",
+    "field correction 2026-08-22 — Tauri bit_flags were wrong"
+   ],
+   "confidence": "high",
+   "register": 3312,
+   "space": "settings",
+   "key": "specialControlWord02",
+   "name": "Special control word 02",
+   "wire_address": 3311,
+   "independent_bit_labels": {
+    "0": "Constant Voltage MPPT Mode (needs 3313)",
+    "1": "Multi-channel MPPT Parallel (0=Independent, 1=Parallel)",
+    "2": "Relay Protection (0=Enable, 1=Disable)",
+    "3": "Leakage Current Protection (0=Enable, 1=Disable)",
+    "4": "Grounding Protection (0=Enable, 1=Disable)",
+    "5": "Grid Disturbance 02 (0=Enable, 1=Disable)",
+    "6": "Grid Current Sampling AD Protection (0=Enable, 1=Disable)"
+   }
+  },
+  "settings:3314": {
+   "title": "Grid Filter NO.",
+   "kind": "value",
+   "summary": "A filter selection index, 0-7. The documents give the range and nothing else — no code table exists.",
+   "write": "plain",
+   "write_explain": "Write the index directly. Valid values are 0 to 7 inclusive. The documents print no meaning for any individual index, so an interface must offer the number and MUST NOT invent names for the eight positions.",
+   "gotcha": "Because no document says what any index does, this is not a setting to change speculatively. Record the value before changing it — there is nothing to look up to get back.",
+   "sources": [
+    "2020.5.27 Grid-Tied 3314 — 'Range: 0~7'"
+   ],
+   "confidence": "low",
+   "register": 3314,
+   "space": "settings",
+   "key": "gridFilterSetting",
+   "name": "Grid filter Setting",
+   "wire_address": 3313
+  }
+ }
+}

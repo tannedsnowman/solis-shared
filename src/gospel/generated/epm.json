@@ -1,0 +1,2378 @@
+{
+ "content_type": "register_map",
+ "family": "epm",
+ "device": "EPM",
+ "document": "Solis EPM (EPM-36000ID) — gospel register map",
+ "generated_from": [
+  "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+  "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+  "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+  "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+  "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+  "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf",
+  "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+  "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+  "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf"
+ ],
+ "conventions": {
+  "offset": "Addresses are the frame addresses. The apps store a RELATIVE OFFSET from the space's base_address (data 36000, settings 36500); address = base + offset and wire_offset is 0. The PV -1 correction does NOT apply here.",
+  "identity": "A register is identified by (device, space, address). EPM and EPM-AX share both base addresses but not their meanings — offsets 9, 10 and 13 name different settings on each device, which is why the two devices are separate files.",
+  "width": "Width comes from the data-type column. U32/S32 are two consecutive registers, low word first.",
+  "word_order": "32-bit registers are LITTLE-endian (low word first) — the opposite of PV. Stated in each register's own description and confirmed against a live 3-phase capture on 2026-08-07.",
+  "precedence": "overrides > app agreement > document (newest first). Both apps agree on every address, so conflicts here are app-vs-document or between the two apps' enum labels."
+ },
+ "app_profile": {
+  "data_base": 36000,
+  "settings_base": 36500,
+  "display_name": "EPM",
+  "views": [
+   "data",
+   "settings",
+   "compare"
+  ],
+  "fetch_all": {
+   "kind": "computed",
+   "max_gap": 15,
+   "max_count": 100
+  },
+  "groups": [
+   {
+    "title": "Date & Time",
+    "batch_start": 0,
+    "batch_end": 5,
+    "settings": [
+     {
+      "key": "year",
+      "label": "Year"
+     },
+     {
+      "key": "month",
+      "label": "Month"
+     },
+     {
+      "key": "day",
+      "label": "Day"
+     },
+     {
+      "key": "hours",
+      "label": "Hour"
+     },
+     {
+      "key": "mins",
+      "label": "Minute"
+     },
+     {
+      "key": "seconds",
+      "label": "Second"
+     }
+    ]
+   },
+   {
+    "title": "EPM Configuration",
+    "batch_start": 6,
+    "batch_end": 14,
+    "settings": [
+     {
+      "key": "slaveAddress",
+      "label": "Slave Address"
+     },
+     {
+      "key": "ctRatio",
+      "label": "CT Ratio"
+     },
+     {
+      "key": "backflowPower",
+      "label": "Backflow Power"
+     },
+     {
+      "key": "inverterNumber",
+      "label": "Inverter Number"
+     },
+     {
+      "key": "epmMode",
+      "label": "EPM Mode"
+     },
+     {
+      "key": "failSafeOnOff",
+      "label": "Fail-Safe"
+     },
+     {
+      "key": "epmDataTransmissionSwitch",
+      "label": "Data Transmission"
+     },
+     {
+      "key": "inverterTypeSelect",
+      "label": "Inverter Type"
+     }
+    ]
+   }
+  ]
+ },
+ "conflicts": [
+  {
+   "device": "epm",
+   "space": "data",
+   "address": 36017,
+   "field": "data_type",
+   "kept": "S16",
+   "kept_from": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+   "other": "U16",
+   "other_from": "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf"
+  },
+  {
+   "device": "epm",
+   "space": "settings",
+   "address": 36508,
+   "field": "data_type",
+   "kept": "S16",
+   "kept_from": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+   "other": "U16",
+   "other_from": "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf"
+  }
+ ],
+ "register_spaces": [
+  {
+   "space": "operation_0x04",
+   "function_code": "0x04",
+   "reg_type": "data",
+   "address_type": "3X",
+   "note": "EPM operational information from 36000. Printed address is the frame address — no offset.",
+   "base_address": 36000,
+   "wire_offset": 0,
+   "registers": [
+    {
+     "address": 36000,
+     "address_end": 36000,
+     "space": "data",
+     "name": "EPM AC V A",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "10->1V 3X",
+     "scale": 0.1,
+     "units": "V",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "epmAcVA",
+     "offset": 0,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36001,
+     "address_end": 36001,
+     "space": "data",
+     "name": "EPM AC I A",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "10->1A 3X",
+     "scale": 0.1,
+     "units": "A",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "epmAcIA",
+     "offset": 1,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36002,
+     "address_end": 36002,
+     "space": "data",
+     "name": "EPM AC V B",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "10->1V 3X",
+     "scale": 0.1,
+     "units": "V",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "epmAcVB",
+     "offset": 2,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36003,
+     "address_end": 36003,
+     "space": "data",
+     "name": "EPM AC I B",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "10->1A 3X",
+     "scale": 0.1,
+     "units": "A",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "epmAcIB",
+     "offset": 3,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36004,
+     "address_end": 36004,
+     "space": "data",
+     "name": "EPM AC V C",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "10->1V 3X",
+     "scale": 0.1,
+     "units": "V",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "epmAcVC",
+     "offset": 4,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36005,
+     "address_end": 36005,
+     "space": "data",
+     "name": "EPM AC I C",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "10->1A 3X",
+     "scale": 0.1,
+     "units": "A",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "epmAcIC",
+     "offset": 5,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36006,
+     "address_end": 36006,
+     "space": "data",
+     "name": "EPM_Power A",
+     "data_type": "S16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "1->100W 3X",
+     "scale": 100.0,
+     "units": "W",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "epmPowerA",
+     "offset": 6,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36007,
+     "address_end": 36007,
+     "space": "data",
+     "name": "EPM_Power B",
+     "data_type": "S16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "1->100W 3X",
+     "scale": 100.0,
+     "units": "W",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "epmPowerB",
+     "offset": 7,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36008,
+     "address_end": 36008,
+     "space": "data",
+     "name": "EPM_Power C",
+     "data_type": "S16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "1->100W 3X",
+     "scale": 100.0,
+     "units": "W",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "epmPowerC",
+     "offset": 8,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36009,
+     "address_end": 36010,
+     "space": "data",
+     "name": "EPM_Power Total",
+     "data_type": "S32",
+     "width": 32,
+     "word_order": "le",
+     "unit": "",
+     "range": "",
+     "description": "1->100W Note: Little Endian Low first, High Latter 3X",
+     "scale": 100.0,
+     "units": "W",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "epmPowerTotal",
+     "offset": 9,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "confirmed",
+     "rule": {
+      "title": "EPM Power Total",
+      "kind": "value",
+      "summary": "Total power measured at the grid connection point, across all three phases. Negative means exporting to the grid.",
+      "write": "read_only",
+      "write_explain": "Measurement register. Read only.",
+      "gotcha": "This is a 32-bit register and it is LITTLE-endian — low word first, the opposite of every PV register. Decoding it big-endian does not fail loudly; it returns a plausible-looking number in the hundreds of thousands of kW. A live 3-phase site showed exactly that before the fix.",
+      "check": "The total must equal the sum of the three phase registers (36006, 36007, 36008), which are plain 16-bit and never affected by word order. If it does not, the word order is wrong.",
+      "related_registers": [
+       "data:36006",
+       "data:36007",
+       "data:36008"
+      ],
+      "sources": [
+       "V19 36009 description — 'Note: Little Endian Low first, High Latter'",
+       "serialTauriApp/src/mapper/__tests__/epmWordOrder.test.ts — live 3-phase capture, 2026-08-07"
+      ],
+      "confidence": "high"
+     }
+    },
+    {
+     "address": 36011,
+     "address_end": 36012,
+     "space": "data",
+     "name": "Inverter Total Power",
+     "data_type": "S32",
+     "width": 32,
+     "word_order": "le",
+     "unit": "",
+     "range": "",
+     "description": "1-> >100W Note: Little Endian Low first, High Latter 3X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "inverterTotalPower",
+     "offset": 11,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Data",
+     "category_source": "derived",
+     "note": "Deliberately left WITHOUT units, and this is a decision, not a gap. 36011 is what the inverters report about THEMSELVES over the comms bus — their own real watts. It never passes through the EPM's CT clamps, so it must NOT be multiplied by CT or PT; doing so would inflate a already-correct figure by the CT ratio. The extension's transformer rule is units-driven, so an empty `units` string is exactly what keeps it unscaled. The app's own description map records kW, which is right for DISPLAY but must not be copied here, because here it would turn the multiply on. Tanner, 2026-08-21: 'No — inverters report their own real watts.'",
+     "overridden": [
+      "note"
+     ],
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36013,
+     "address_end": 36014,
+     "space": "data",
+     "name": "Reserve",
+     "data_type": "",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "reserve",
+     "offset": 13,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36014,
+     "address_end": 36014,
+     "space": "data",
+     "name": "EPM firmware version",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "3X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf"
+     ],
+     "primary_source": "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "document_only"
+    },
+    {
+     "address": 36015,
+     "address_end": 36015,
+     "space": "data",
+     "name": "Power control percent",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "10000->100% 3X",
+     "scale": 0.01,
+     "units": "%",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "powerControlPercent",
+     "offset": 15,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36016,
+     "address_end": 36016,
+     "space": "data",
+     "name": "CT ratio",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "1->10 Note:EPM-5G/ PLUS, 05+ Ver change to 1-10, Original is 1-100 3X",
+     "scale": 10.0,
+     "units": "Note",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "ctRatio",
+     "offset": 16,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36017,
+     "address_end": 36017,
+     "space": "data",
+     "name": "Backflow power setting value",
+     "data_type": "S16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "1->100W 3X",
+     "scale": 100.0,
+     "units": "W",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "data_type_variants": [
+      "S16",
+      "U16"
+     ],
+     "signedness_disputed": true,
+     "key": "backflowPowerSettingValue",
+     "offset": 17,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36018,
+     "address_end": 36018,
+     "space": "data",
+     "name": "Inverter number setting value",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "3X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "inverterNumberSettingValue",
+     "offset": 18,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36019,
+     "address_end": 36019,
+     "space": "data",
+     "name": "Year",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "00-99 3X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "year",
+     "offset": 19,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36020,
+     "address_end": 36020,
+     "space": "data",
+     "name": "Month",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "3X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "month",
+     "offset": 20,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36021,
+     "address_end": 36021,
+     "space": "data",
+     "name": "Day",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "3X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "day",
+     "offset": 21,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36022,
+     "address_end": 36022,
+     "space": "data",
+     "name": "Hours",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "3X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "hours",
+     "offset": 22,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36023,
+     "address_end": 36023,
+     "space": "data",
+     "name": "Mins",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "3X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "mins",
+     "offset": 23,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36024,
+     "address_end": 36024,
+     "space": "data",
+     "name": "Seconds",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "3X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "seconds",
+     "offset": 24,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36025,
+     "address_end": 36025,
+     "space": "data",
+     "name": "FailSafe ON/OFF",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "0->OFF 1->ON Default:OFF, After Ver06 3X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "failSafeOnOff",
+     "offset": 25,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "value_map": {
+      "0": "Off",
+      "1": "On"
+     },
+     "value_map_sources": [
+      "tauri"
+     ],
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36026,
+     "address_end": 36026,
+     "space": "data",
+     "name": "Grid PF",
+     "data_type": "S16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "-1.0~-0.8 +0.8~+1.0 3X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "gridPF",
+     "offset": 26,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36027,
+     "address_end": 36027,
+     "space": "data",
+     "name": "Grid Freq(Meter)",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "0.01Hz",
+     "range": "",
+     "description": "100->1Hz 3X",
+     "scale": 0.01,
+     "units": "Hz",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "gridFreqMeter",
+     "offset": 27,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36028,
+     "address_end": 36029,
+     "space": "data",
+     "name": "Total Load power",
+     "data_type": "U32",
+     "width": 32,
+     "word_order": "le",
+     "unit": "",
+     "range": "",
+     "description": "1->100W Note：Calculate from inverter power and EPM power Note: Little Endian Low first, High Latter 3X",
+     "scale": 100.0,
+     "units": "W",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "totalLoadPower",
+     "offset": 28,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36030,
+     "address_end": 36049,
+     "space": "data",
+     "name": "Reserve",
+     "data_type": "",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "sn",
+     "offset": 30,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "app_span": 16,
+     "span_disputed": {
+      "extension": [
+       30,
+       16
+      ],
+      "tauri": [
+       30,
+       1
+      ]
+     },
+     "category": "Data",
+     "category_source": "derived",
+     "kind": "ascii",
+     "note": "Serial number as TEXT, not a number, and 16 registers long. The extension maps `sn` as 16 consecutive registers from offset 30; Tauri maps it as a single register, which would show only the first two characters. The documents print 36030-36049 as one 'Reserve' span and never name the field, so neither app is confirmed by the document — but a 1-register serial number cannot be right, and the extension's tables were the ones that proved correct about PV. Same reasoning as the failSafe/controlProtocol calls (Tanner, 2026-08-21). If a live read shows anything other than readable text here, remove this override.",
+     "overridden": [
+      "app_span",
+      "kind",
+      "note"
+     ],
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36050,
+     "address_end": 36051,
+     "space": "data",
+     "name": "Inverter total generation energy",
+     "data_type": "U32",
+     "width": 32,
+     "word_order": "le",
+     "unit": "0.01kWh",
+     "range": "",
+     "description": "100-> >1kWh Note: Little Endian Low first, High Latter 3X",
+     "scale": 1.0,
+     "units": "0.01kWh",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "inverterTotalGenerationEnergy",
+     "offset": 50,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36052,
+     "address_end": 36053,
+     "space": "data",
+     "name": "Load total consumption energy",
+     "data_type": "U32",
+     "width": 32,
+     "word_order": "le",
+     "unit": "0.01kWh",
+     "range": "",
+     "description": "100-> >1kWh Note: Little Endian Low first, High Latter 3X",
+     "scale": 1.0,
+     "units": "0.01kWh",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "loadTotalConsumptionEnergy",
+     "offset": 52,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36054,
+     "address_end": 36055,
+     "space": "data",
+     "name": "Grid import total active energy",
+     "data_type": "U32",
+     "width": 32,
+     "word_order": "le",
+     "unit": "0.01kWh",
+     "range": "",
+     "description": "100-> >1kWh Note: Little Endian Low first, High Latter 3X",
+     "scale": 1.0,
+     "units": "0.01kWh",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "gridImportTotalActiveEnergy",
+     "offset": 54,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36056,
+     "address_end": 36057,
+     "space": "data",
+     "name": "Grid export total active energy",
+     "data_type": "U32",
+     "width": 32,
+     "word_order": "le",
+     "unit": "0.01kWh",
+     "range": "",
+     "description": "100-> >1kWh Note: Little Endian Low first, High Latter 3X",
+     "scale": 1.0,
+     "units": "0.01kWh",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "gridExportTotalActiveEnergy",
+     "offset": 56,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36058,
+     "address_end": 36058,
+     "space": "data",
+     "name": "EPM data transmission Switch (Transmit ON/OFF)",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "0->OFF； 1->ON； Default is 0； 3X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "epmDataTransmissionSwitch",
+     "offset": 58,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "value_map": {
+      "0": "Off",
+      "1": "On"
+     },
+     "value_map_sources": [
+      "tauri"
+     ],
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36059,
+     "address_end": 36059,
+     "space": "data",
+     "name": "Batch upgrade flag",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "0-> Not support batch upgrade； 1-> support batch upgrade； Default is 0； 3X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "batchUpgradeFlag",
+     "offset": 59,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36060,
+     "address_end": 36060,
+     "space": "data",
+     "name": "EPM model",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "00E0: 5G-EPM 0000：Unknown EPM or 2G-EPM (Hex) 3X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "modelNo",
+     "offset": 60,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36061,
+     "address_end": 36061,
+     "space": "data",
+     "name": "Reserved",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "3X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf"
+     ],
+     "primary_source": "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+     "key": "ptValue",
+     "offset": 61,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36062,
+     "address_end": 36062,
+     "space": "data",
+     "name": "Reserved",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "3X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf"
+     ],
+     "primary_source": "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "document_only"
+    },
+    {
+     "address": 36063,
+     "address_end": 36063,
+     "space": "data",
+     "name": "Reserved",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "3X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf"
+     ],
+     "primary_source": "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "document_only"
+    },
+    {
+     "address": 36064,
+     "address_end": 36064,
+     "space": "data",
+     "name": "Reserved",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "3X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf"
+     ],
+     "primary_source": "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "document_only"
+    },
+    {
+     "address": 36066,
+     "address_end": 36066,
+     "space": "data",
+     "name": "Reserved",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "3X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf"
+     ],
+     "primary_source": "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "document_only"
+    },
+    {
+     "address": 36067,
+     "address_end": 36067,
+     "space": "data",
+     "name": "Reserved",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "3X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf"
+     ],
+     "primary_source": "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "document_only"
+    },
+    {
+     "address": 36068,
+     "address_end": 36068,
+     "space": "data",
+     "name": "Reserved",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "3X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf"
+     ],
+     "primary_source": "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+     "category": "Data",
+     "category_source": "derived",
+     "confidence": "document_only"
+    }
+   ]
+  },
+  {
+   "space": "setting_0x03_06_10",
+   "function_code": "0x03 / 0x06 / 0x10",
+   "reg_type": "settings",
+   "address_type": "4X",
+   "note": "EPM settings from 36500. Printed address is the frame address — no offset.",
+   "base_address": 36500,
+   "wire_offset": 0,
+   "registers": [
+    {
+     "address": 36500,
+     "address_end": 36500,
+     "space": "settings",
+     "name": "Year",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "00-99 4X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "year",
+     "offset": 0,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Misc",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36501,
+     "address_end": 36501,
+     "space": "settings",
+     "name": "Month",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "4X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "month",
+     "offset": 1,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Misc",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36502,
+     "address_end": 36502,
+     "space": "settings",
+     "name": "Day",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "4X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "day",
+     "offset": 2,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Misc",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36503,
+     "address_end": 36503,
+     "space": "settings",
+     "name": "Hours",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "4X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "hours",
+     "offset": 3,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Misc",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36504,
+     "address_end": 36504,
+     "space": "settings",
+     "name": "Mins",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "4X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "mins",
+     "offset": 4,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Misc",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36505,
+     "address_end": 36505,
+     "space": "settings",
+     "name": "Seconds",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "4X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "seconds",
+     "offset": 5,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Misc",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36506,
+     "address_end": 36506,
+     "space": "settings",
+     "name": "Slave Address",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "4X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "slaveAddress",
+     "offset": 6,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "valid_range": {
+      "min": 1,
+      "max": 99
+     },
+     "category": "Misc",
+     "category_source": "extension",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36507,
+     "address_end": 36507,
+     "space": "settings",
+     "name": "CT ratio",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "1->100 4X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "ctRatio",
+     "offset": 7,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "valid_range": {
+      "min": 1,
+      "max": 10000
+     },
+     "category": "Meter",
+     "category_source": "extension",
+     "confidence": "confirmed",
+     "rule": {
+      "title": "CT Ratio",
+      "kind": "value",
+      "summary": "Tells the EPM how big the current transformers (the clamps around the cable that measure current) are.",
+      "write": "plain",
+      "write_explain": "Write the ratio directly. A 200:1 CT is written as 200.",
+      "gotcha": "Every power and current reading is multiplied by this number. Getting it wrong scales the whole site's readings, and the EPM will limit at the wrong point — but nothing reports an error, because the readings still look like plausible numbers.",
+      "related_registers": [
+       "settings:36508",
+       "data:36001"
+      ],
+      "sources": [
+       "V19 36507 'CT ratio'"
+      ],
+      "confidence": "high"
+     }
+    },
+    {
+     "address": 36508,
+     "address_end": 36508,
+     "space": "settings",
+     "name": "Backflow power",
+     "data_type": "S16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "1->100W 4X",
+     "scale": 100.0,
+     "units": "W",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "data_type_variants": [
+      "S16",
+      "U16"
+     ],
+     "signedness_disputed": true,
+     "key": "backflowPower",
+     "offset": 8,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "valid_range": {
+      "min": 0,
+      "max": 10000000
+     },
+     "category": "Control",
+     "category_source": "extension",
+     "confidence": "confirmed",
+     "rule": {
+      "title": "Backflow Power",
+      "kind": "value",
+      "summary": "How much power is allowed to flow back to the grid before the EPM starts limiting the inverters.",
+      "write": "plain",
+      "write_explain": "Write the value directly. Zero means no export is allowed at all.",
+      "gotcha": "The documents disagree on this register's sign — some print it U16 and some S16. A negative value only means anything if the sign is real, so a site that needs a negative backflow setting must be checked against the live reading rather than trusted from the map.",
+      "related_registers": [
+       "settings:36507",
+       "settings:36510"
+      ],
+      "sources": [
+       "Both apps' mappers, offset 8",
+       "U16/S16 split across the PV documents at 36508"
+      ],
+      "confidence": "medium"
+     }
+    },
+    {
+     "address": 36509,
+     "address_end": 36509,
+     "space": "settings",
+     "name": "Inverter number",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "4X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "inverterNumber",
+     "offset": 9,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Control",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36510,
+     "address_end": 36510,
+     "space": "settings",
+     "name": "EPM mode",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "01：Sum of three phase power 02：Minimum power from one phase *3。 4X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "epmMode",
+     "offset": 10,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "value_map": {
+      "1": "Sum of 3-Phase Power",
+      "2": "Min Phase x3"
+     },
+     "value_map_sources": [
+      "tauri"
+     ],
+     "category": "Control",
+     "category_source": "derived",
+     "confidence": "confirmed",
+     "rule": {
+      "title": "EPM Mode",
+      "kind": "enum",
+      "summary": "Picks how the EPM limits export.",
+      "write": "plain",
+      "write_explain": "Write the mode number directly. One mode runs at a time — this is a selector, not a set of flags.",
+      "gotcha": "EPM-AX uses this same address (36510) for 'Per-Phase Limiting', which is a plain on/off. Writing an EPM mode number to an AX unit sets something completely different. Always confirm which device is on the other end of the wire before writing here.",
+      "related_registers": [
+       "settings:36508",
+       "settings:36511"
+      ],
+      "sources": [
+       "Both apps' mappers, offset 10",
+       "ax.ts offset 10 is perPhaseLimiting"
+      ],
+      "confidence": "high"
+     }
+    },
+    {
+     "address": 36511,
+     "address_end": 36511,
+     "space": "settings",
+     "name": "FailSafe ON/OFF",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "0->OFF 1->ON Default:OFF 4X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "failSafeOnOff",
+     "offset": 11,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "value_map": {
+      "0": "Off",
+      "1": "On"
+     },
+     "value_map_sources": [
+      "tauri"
+     ],
+     "category": "Control",
+     "category_source": "derived",
+     "confidence": "confirmed",
+     "rule": {
+      "title": "FailSafe ON/OFF",
+      "kind": "enum",
+      "summary": "When on, the inverters shut down if the EPM stops talking to them. Stops a site exporting freely after a comms failure.",
+      "write": "plain",
+      "write_explain": "0 is OFF, 1 is ON. Default is OFF.",
+      "gotcha": "EPM-AX reuses this address for a five-value FailSafe mode, and the two apps do not agree on what those five values mean. The simple 0/1 documented here is the EPM meaning only.",
+      "related_registers": [
+       "settings:36510"
+      ],
+      "sources": [
+       "V19 36511 — '0->OFF 1->ON Default:OFF'"
+      ],
+      "confidence": "high"
+     }
+    },
+    {
+     "address": 36512,
+     "address_end": 36512,
+     "space": "settings",
+     "name": "Reserve",
+     "data_type": "",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "reserve",
+     "offset": 12,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "category": "Misc",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36513,
+     "address_end": 36513,
+     "space": "settings",
+     "name": "EPM data transmission Switch",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "0->OFF； 1->ON； Default is 0； 4X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "epmDataTransmissionSwitch",
+     "offset": 13,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "value_map": {
+      "0": "Off",
+      "1": "On"
+     },
+     "value_map_sources": [
+      "tauri"
+     ],
+     "category": "Control",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36514,
+     "address_end": 36514,
+     "space": "settings",
+     "name": "Inverter type Select",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "0x55->PV inverter（Meter Info OFF）； 0xAA->Hybrid inverter （Meter Info ON）； Default: 0x55； 4X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18(1).pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V18.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V19.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter.pdf",
+      "RS485_MODBUS Solis PV Grid-Connected Inverter V16  (1).pdf"
+     ],
+     "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
+     "key": "inverterTypeSelect",
+     "offset": 14,
+     "app_sources": [
+      "extension",
+      "tauri"
+     ],
+     "value_map": {
+      "85": "PV (0x55)",
+      "170": "Hybrid (0xAA)"
+     },
+     "value_map_sources": [
+      "tauri"
+     ],
+     "category": "Control",
+     "category_source": "derived",
+     "confidence": "confirmed"
+    },
+    {
+     "address": 36515,
+     "address_end": 36515,
+     "space": "settings",
+     "name": "Reserved",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "4X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf"
+     ],
+     "primary_source": "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+     "category": "Misc",
+     "category_source": "derived",
+     "confidence": "document_only"
+    },
+    {
+     "address": 36516,
+     "address_end": 36516,
+     "space": "settings",
+     "name": "Reserved",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "4X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf"
+     ],
+     "primary_source": "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+     "category": "Misc",
+     "category_source": "derived",
+     "confidence": "document_only"
+    },
+    {
+     "address": 36517,
+     "address_end": 36517,
+     "space": "settings",
+     "name": "Reserved",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "4X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf"
+     ],
+     "primary_source": "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+     "category": "Misc",
+     "category_source": "derived",
+     "confidence": "document_only"
+    },
+    {
+     "address": 36518,
+     "address_end": 36518,
+     "space": "settings",
+     "name": "Reserved",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "4X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf"
+     ],
+     "primary_source": "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+     "category": "Misc",
+     "category_source": "derived",
+     "confidence": "document_only"
+    },
+    {
+     "address": 36519,
+     "address_end": 36519,
+     "space": "settings",
+     "name": "Reserved",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "4X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf"
+     ],
+     "primary_source": "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+     "category": "Misc",
+     "category_source": "derived",
+     "confidence": "document_only"
+    },
+    {
+     "address": 36520,
+     "address_end": 36520,
+     "space": "settings",
+     "name": "Reserved",
+     "data_type": "U16",
+     "width": 16,
+     "word_order": "be",
+     "unit": "",
+     "range": "",
+     "description": "4X",
+     "scale": 1.0,
+     "units": "",
+     "present_in": [
+      "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+      "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
+      "[Grid-Tied EN 2022.1.20]RS485_MODBUS(INV-3000ID EPM-36000ID) PV Grid Tied Inverter.pdf"
+     ],
+     "primary_source": "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
+     "category": "Misc",
+     "category_source": "derived",
+     "confidence": "document_only"
+    }
+   ]
+  }
+ ],
+ "rule_count": 5,
+ "rule_problems": [],
+ "structural_errors": [],
+ "structural_warnings": [],
+ "app_map_gaps": [
+  {
+   "device": "epm",
+   "space": "data",
+   "key": "sn",
+   "issue": "offset_disagreement",
+   "extension": [
+    30,
+    16
+   ],
+   "tauri": [
+    30,
+    1
+   ]
+  }
+ ]
+}

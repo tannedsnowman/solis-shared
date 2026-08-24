@@ -1,0 +1,665 @@
+{
+ "content_type": "register_rules",
+ "family": "hybrid",
+ "document": "Hybrid Inverter (ESINV-33000ID) — register behaviour rules",
+ "rules": {
+  "25002": {
+   "title": "Remote Control Validity Identifier",
+   "kind": "unlock",
+   "summary": "Marks the remote-control block valid. Without it the block is ignored.",
+   "write": "unlock_code",
+   "unlock_value": 43605,
+   "write_explain": "Write 0xAA55 (43605) to mark registers 25003-25099 valid. Any other value invalidates the whole block.",
+   "related_registers": [
+    25000,
+    25001
+   ],
+   "sources": [
+    "v3.5 25002 description"
+   ],
+   "confidence": "high",
+   "register": 25002,
+   "key": "validIdentifierForRemoteControlInformation",
+   "name": "Valid Identifier – For Remote Control Information"
+  },
+  "33122": {
+   "title": "Operating Mode",
+   "kind": "bitfield",
+   "summary": "Read-only mirror of the running mode. Exactly one bit is set at any time.",
+   "bit_groups": [
+    {
+     "name": "Running mode",
+     "rule": "exactly_one",
+     "bits": null,
+     "explain": "Every bit is one mode and only one runs at a time. If two are set, the reading is suspect — check the register width and the read itself before believing it."
+    }
+   ],
+   "write": "read_only",
+   "sources": [
+    "v3.1 p10",
+    "Appendix 8"
+   ],
+   "confidence": "high",
+   "register": 33122,
+   "key": "operatingMode",
+   "name": "Operating Mode"
+  },
+  "33123": {
+   "title": "Working Mode Running Status",
+   "kind": "bitfield",
+   "summary": "Reactive-power mode status. Only one of the four reactive modes runs at a time; Volt-watt is separate.",
+   "bit_groups": [
+    {
+     "name": "Reactive power mode",
+     "rule": "at_most_one",
+     "bits": [
+      1,
+      2,
+      3,
+      4
+     ],
+     "explain": "Volt-var (BIT01), Fixed power factor (BIT02), Fixed reactive power (BIT03) and Power-PF (BIT04) are one selector — at most one is on.",
+     "bit_labels": {
+      "1": "Volt-Var Started",
+      "2": "Reserve",
+      "3": "Reserve",
+      "4": "Reserve"
+     }
+    }
+   ],
+   "independent_bits": [
+    0
+   ],
+   "independent_explain": "BIT00 Volt-watt is independent and may run alongside a reactive mode.",
+   "write": "read_only",
+   "applies_when": "Used for the Hawaii standards (4777-A/B/C/N, TOR, UL0240-18). Other grid standards report working mode in 33091 instead.",
+   "sources": [
+    "v3.1 p10"
+   ],
+   "confidence": "high",
+   "register": 33123,
+   "key": "workingModeRunningStatus",
+   "name": "Standard Operating Mode Startup Status",
+   "independent_bit_labels": {
+    "0": "Volt-Watt Started"
+   }
+  },
+  "34262": {
+   "title": "SPH SN Write Protection",
+   "kind": "unlock",
+   "summary": "An unlock gate with a 60-second timeout.",
+   "write": "unlock_code",
+   "unlock_value": 42405,
+   "lock_value": 0,
+   "write_explain": "Write 0xA5A5 (42405) to remove write protection, then write the serial number within 60 seconds. The register self-clears to 0 after 60 seconds whether or not the write happened, re-arming the protection.",
+   "sources": [
+    "v3.1 34262 description",
+    "v3.5"
+   ],
+   "confidence": "high",
+   "register": 34262,
+   "key": "sphSNWriteProtect",
+   "name": "SPH SN write protect"
+  },
+  "43031": {
+   "title": "Restart HMI",
+   "kind": "unlock",
+   "summary": "Reboots the display/HMI. A magic word, not an on/off: only 0xAA55 does anything.",
+   "write": "single_register_only",
+   "unlock_value": 43605,
+   "write_explain": "Write 0xAA55 (43605) with function code 0x06 to restart the HMI. Any other value is ignored. Must not be sent as part of a 0x10 multi-register write.",
+   "destructive": false,
+   "related_registers": [
+    43033
+   ],
+   "related_explain": "The documents say to restart the HMI after a factory settings restore (43033), so the two are normally used together.",
+   "sources": [
+    "v3.1 p56 register 43031",
+    "Tauri restartHMI valueMap"
+   ],
+   "confidence": "high",
+   "register": 43031,
+   "key": "restartHMI",
+   "name": "Restart HMI"
+  },
+  "43033": {
+   "title": "Factory Setting Restore",
+   "kind": "destructive",
+   "summary": "Restores factory settings. Single-register write only.",
+   "write": "single_register_only",
+   "write_explain": "Write 1 to restore factory settings. Must be written with function code 0x06, not as part of a 0x10 multi-register write.",
+   "destructive": true,
+   "destructive_explain": "Clears the inverter's configuration. Read and save every setting first — there is no undo.",
+   "sources": [
+    "v3.5 43033 description"
+   ],
+   "confidence": "high",
+   "register": 43033,
+   "key": "factorySettingRestore",
+   "name": "Factory setting restore;"
+  },
+  "43073": {
+   "title": "Meter/CT Placement Setting",
+   "kind": "bitfield",
+   "summary": "A bit word holding the EPM switches, the three-phase power control mode, and the grid-side meter-vs-CT choice. It is NOT a two-value dropdown.",
+   "bit_groups": [
+    {
+     "name": "EPM source",
+     "rule": "mutually_exclusive",
+     "bits": [
+      4,
+      8
+     ],
+     "explain": "The internal EPM switch (BIT04) and the external EPM (BIT08) cannot both be on. To turn BIT08 on, set BIT04=0 and BIT08=1 in the same write.",
+     "bit_labels": {
+      "4": "EPM Switch",
+      "8": "External EPM ON/OFF"
+     }
+    }
+   ],
+   "independent_bits": [
+    5,
+    6,
+    7,
+    9,
+    13
+   ],
+   "independent_explain": "BIT05 FailSafe and BIT09 external FailSafe are effective only when their EPM function (BIT04 or BIT07) is enabled. BIT06 selects three-phase balanced (0) or individual (1) control and decides whether 43326 or 43327-43329 applies. BIT13 chooses meter (0) or CT (1) on the grid side and gates register 43362 (CT Ratio).",
+   "write": "read_modify_write",
+   "write_explain": "Never write a bare 0 or 1 to this register. Read it, change only the bits you mean, write the whole word back. Writing a bare value clears the EPM, FailSafe and power-control bits together, and nothing in the reply reports it.",
+   "related_registers": [
+    43326,
+    43327,
+    43362
+   ],
+   "related_explain": "BIT06 decides whether 43326 (balanced) or 43327-43329 (individual) is the effective backflow setting. BIT13 set to CT makes 43362 (CT Ratio) take effect.",
+   "sources": [
+    "v3.5 43073 description",
+    "v3.5 Appendix 12",
+    "v3.1 p70, v3.4 p58, v3.5 p62 43362 description: \"Effective only when BIT13 of register 43073 is set to CT\""
+   ],
+   "confidence": "high",
+   "note": "Added 2026-08-20. This register previously carried a value_map (0=Grid Side, 1=Load Side) harvested from Tauri, which would have rendered a dropdown whose write destroyed every other bit. The documents define it bit by bit and both apps reference 43073 BIT06/BIT07 as preconditions elsewhere. Corrected 2026-08-20: this rule previously named 43752 as the register BIT13 gates. That was a transposition of 43362. Three documents (v3.1 p70, v3.4 p58, v3.5 p62) state under 43362 \"CT Ratio\" that it is effective only when 43073 BIT13 is set to CT, while every document occurrence of 43752 is \"TOU Optimization Revenue V2: Grid-Tied Discharging Period 1 Cut-off Voltage\" (0.1V), which has no relationship to meter/CT placement.",
+   "register": 43073,
+   "key": "meterCTPosition",
+   "name": "Meter/CT Placement Setting",
+   "independent_bit_labels": {
+    "5": "FailSafe Switch",
+    "6": "Power Control Mode (1=3ph Individual)",
+    "7": "EPM Current Setting Switch",
+    "9": "External EPM FailSafe",
+    "13": "Meter/CT Selection Grid Side (1=CT)"
+   }
+  },
+  "43110": {
+   "title": "Energy Storage Control Switch",
+   "kind": "bitfield",
+   "summary": "One register holds both the work-mode selector and several independent toggles. Only one mode may be on at a time; the toggles are free.",
+   "bit_groups": [
+    {
+     "name": "Work mode",
+     "rule": "exactly_one",
+     "bits": [
+      0,
+      2,
+      6,
+      9
+     ],
+     "explain": "Self-Use (BIT00), Off-Grid (BIT02), Feed-In Priority (BIT06) and Peak-Shaving (BIT09) are four modes in one selector. Turning one on must turn the others off. Setting two at once leaves the inverter in an undefined mode. BIT09 here is the peak-shaving WORK MODE — not the same thing as 43483 BIT07, which limits battery charging power against grid import.",
+     "bit_labels": {
+      "0": "Self-Use",
+      "2": "Off-Grid",
+      "6": "Feed-In Priority",
+      "9": "Peak-Shaving"
+     }
+    },
+    {
+     "name": "Reserve battery vs peak-shaving",
+     "rule": "mutually_exclusive",
+     "bits": [
+      4,
+      9
+     ],
+     "explain": "Reserve Battery (BIT04) and Peak-Shaving (BIT09) cannot both be on.",
+     "bit_labels": {
+      "4": "Reserve Battery",
+      "9": "Peak-Shaving"
+     }
+    }
+   ],
+   "independent_bits": [
+    1,
+    3,
+    5,
+    7,
+    8,
+    10
+   ],
+   "independent_explain": "Ordinary on/off switches, freely combinable, including while a mode is selected. BIT03 Battery Wakeup and BIT05 Grid Charge are the two used most often.",
+   "write": "read_modify_write",
+   "write_explain": "Never write a bare bit value. Read the register, change only the bits you mean to change, write the whole word back. Writing a fresh value silently clears every other switch in the register.",
+   "related_registers": [
+    43483,
+    43487,
+    43488
+   ],
+   "related_explain": "Peak-Shaving mode needs its parameters set separately: 43487 Peak SOC and 43488 Maximum Allowable Grid-side Power. Enabling BIT09 without them does nothing useful. Two different things are called peak-shaving: this one is the WORK MODE, while 43483 BIT07 is a battery charging limit that holds grid import under a cap. Both keep the name because Solis devices label them that way. They are independent and may be on together.",
+   "sources": [
+    "extension HYBRID_STORAGE_CONTROL_BITS (field-confirmed 2026-08-20)",
+    "v3.5 43110 description",
+    "user field correction 2026-08-20: Off-Grid (BIT02) is a work mode, not a free toggle"
+   ],
+   "confidence": "high",
+   "note": "Bit layout from the extension's table, confirmed authoritative by the user on field evidence. Appendix 7 (v3.4, v3.5) places Peak-Shaving at BIT11 with BIT08 and BIT09 'Deactivated'; that layout is NOT used. The exclusivity rule itself is from the v3.5 description, remapped onto the app's bit positions: the document names Self-Consumption, Grid Feed-in Priority and Peak-Shaving as the three exclusive modes, and Backup/Reserve Battery as exclusive with Peak-Shaving. Off-Grid (BIT02) was listed as an independent toggle until 2026-08-20, when the user corrected it on field evidence: it is a fourth member of the exclusive work-mode selector. No document states this; per precedence (overrides > app > doc) the field correction wins.",
+   "register": 43110,
+   "key": "storageControlSwitchValue",
+   "name": "Energy Storage Control Switch",
+   "independent_bit_labels": {
+    "1": "Time-of-Use",
+    "3": "Battery Wakeup",
+    "5": "Grid Charge",
+    "7": "Battery OVC",
+    "8": "Force Charge",
+    "10": "Battery Healing"
+   }
+  },
+  "43133": {
+   "title": "Remote Control Active Power on System Side",
+   "kind": "value",
+   "summary": "Only takes effect while remote control is active.",
+   "write": "plain",
+   "depends_on": {
+    "register": 43110,
+    "explain": "Only available while Remote Control mode is on. Setting it otherwise is accepted but ignored."
+   },
+   "sign_convention": "Positive exports to grid, negative imports from grid.",
+   "sources": [
+    "v3.5 43133 description"
+   ],
+   "confidence": "medium",
+   "note": "The description says 'only available when Remote Control is enabled' without naming the register that enables it. The dependency target is inferred and unconfirmed.",
+   "register": 43133,
+   "key": "remoteControlActivePowerOnSystemGridConnectionPoint",
+   "name": "Remote Control – Active Power on System grid connection point"
+  },
+  "43140": {
+   "title": "Meter Type and Installation Location",
+   "kind": "enum",
+   "summary": "One word holding TWO independent settings, one per byte: the high byte is where the meter is installed, the low byte is which meter it is.",
+   "write": "read_modify_write",
+   "write_explain": "Byte-granular read-modify-write. An editor that changes the meter TYPE must claim only the low byte (0x00FF) and an editor that changes the LOCATION only the high byte (0xFF00). A bare write of one field's value clears the other, which silently relocates a correctly-configured meter.",
+   "sources": [
+    "v3.1 43140 description",
+    "extension getHybridDataDisplayValue byte split"
+   ],
+   "confidence": "high",
+   "register": 43140,
+   "key": "meter1TypeAndLocation",
+   "name": "Meter Type and Its Installation Location"
+  },
+  "43249": {
+   "title": "Special Settings — protection switches",
+   "kind": "bitfield",
+   "summary": "The Protect Setting screen. Five of the eight bits are ACTIVE-LOW: for Relay, I-leak, PV Iso, Grid Interference and Grid Interference 02, the bit SET means the protection is DISABLED. SolisCloud prints these as raw bits, so a 1 there reads as 'on' while the protection is actually off.",
+   "independent_bits": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "independent_explain": "Eight unrelated switches sharing one word, freely combinable. Bits 2,3,4,5,7 are inverted (1 = protection disabled); bits 0,1,6 follow the usual 0=off, 1=on.",
+   "bit_notes": {
+    "0": "MPPT parallel. Not inverted: 0 = individual, 1 = parallel.",
+    "1": "IgFollow, faster grid-off response. Not inverted: 1 = enabled.",
+    "2": "Inverted: 0 = relay protection ENABLED, 1 = disabled.",
+    "3": "Inverted: 0 = leakage-current protection ENABLED, 1 = disabled. The trip level is a separate register, 43245.",
+    "4": "Inverted: 0 = PV isolation protection ENABLED, 1 = disabled. The trip level is a separate register, 43246.",
+    "5": "Inverted: 0 = grid interference protection ENABLED, 1 = disabled.",
+    "6": "DC component switch. Not inverted: 1 = enabled.",
+    "7": "Inverted: 0 = grid interference 02 protection ENABLED, 1 = disabled."
+   },
+   "write": "read_modify_write",
+   "write_explain": "Read the register, change only your bit, write the whole word back. A bare write turns off every other protection in the word — which on this register means silently disabling relay, leakage and isolation protection at once.",
+   "related_registers": [
+    43245,
+    43246
+   ],
+   "related_explain": "BIT03 switches leakage-current protection on and off; 43245 sets its trip level in mA. BIT04 does the same for PV isolation protection, whose threshold is 43246 in kOhm. Turning a bit off leaves its level register set but inactive.",
+   "sources": [
+    "v3.1 p72 register 43249",
+    "v3.1 Appendix 15",
+    "extension HYBRID_SPECIAL_SETTINGS_BITS"
+   ],
+   "confidence": "high",
+   "register": 43249,
+   "key": "specialSettings",
+   "name": "Special Settings",
+   "independent_bit_labels": {
+    "0": "MPPT Parallel (0=Individual, 1=Parallel)",
+    "1": "IgFollow (faster grid OFF)",
+    "2": "Relay Protection (0=Enable, 1=Disable)",
+    "3": "I-leak Protection (0=Enable, 1=Disable)",
+    "4": "PV Iso Protection (0=Enable, 1=Disable)",
+    "5": "Grid Interference (0=Enable, 1=Disable)",
+    "6": "DC Component Switch",
+    "7": "Grid Interference 02 (0=Enable, 1=Disable)"
+   }
+  },
+  "43284": {
+   "title": "Special Function Control Word 02",
+   "kind": "bitfield",
+   "summary": "Three independent switches in one word. BIT02 is active-low.",
+   "independent_bits": [
+    0,
+    1,
+    2
+   ],
+   "independent_explain": "Free on/off switches. BIT02 Battery Saving is ACTIVE-LOW - the v3.5 p60 table reads '0: enabled, 1: disabled', the opposite of BIT00 and BIT01 which are both '0: disabled, 1: enabled'. An editor that writes 1 to enable battery saving switches it OFF. BIT03-15 are reserved and must never be written.",
+   "write": "read_modify_write",
+   "write_explain": "Change only the bit you mean. Writing a bare value clears the other two switches and stamps the reserved bits.",
+   "sources": [
+    "v3.5 p60"
+   ],
+   "confidence": "high",
+   "register": 43284,
+   "key": "specialFunctionControlWord02",
+   "name": "Special Function Control Word 02",
+   "independent_bit_labels": {
+    "0": "PV-Only Load Enable",
+    "1": "Fan Low-Noise Mode",
+    "2": "Battery Saving (active-low: 1 = disabled)"
+   }
+  },
+  "43302": {
+   "title": "Special Function Control Word 01",
+   "kind": "bitfield",
+   "summary": "Independent function bits: boost wave-off, DC injection adjustment, the AFCI self-checks, the grid-connection types and the PV enable.",
+   "independent_bits": [
+    0,
+    1,
+    3,
+    4,
+    8,
+    9,
+    10
+   ],
+   "independent_explain": "Ordinary on/off switches sharing one word. BIT10 PV Enable is INVERTED (0 = enable, 1 = off); the rest are 1 = on.",
+   "bit_notes": {
+    "0": "SolisCloud calls this \"No boost\". 1 = boost does not generate wave.",
+    "3": "AFCI self-check. A one-shot trigger rather than a lasting setting.",
+    "4": "AFCI mode self-check. Also a one-shot trigger.",
+    "8": "US single-phase HV grid connection type: 0 = L1-L2-N, 1 = L1-L2.",
+    "9": "Three-phase HV grid connection type: 0 = L1-L2-L3-N, 1 = L1-L2-L3.",
+    "10": "Inverted: 0 = PV enabled, 1 = PV off."
+   },
+   "write": "read_modify_write",
+   "write_explain": "Read the register, change only your bit, write the whole word back. A bare write clears the grid-connection type and the PV enable along with everything else in the word.",
+   "sources": [
+    "v3.1 Appendix 16",
+    "extension HYBRID_SPECIAL_FUNCTION_BITS"
+   ],
+   "confidence": "medium",
+   "register": 43302,
+   "key": "specialFunctionControlWord",
+   "name": "Special function control word",
+   "independent_bit_labels": {
+    "0": "Boost Not Generate Wave Off",
+    "1": "DC Injection Adjustment Off",
+    "3": "AFCI Self-Check",
+    "4": "AFCI Mode Self-Check",
+    "8": "US 1PH HV Grid Connect (0=L1-L2-N, 1=L1-L2)",
+    "9": "3PH HV Grid Connect (0=L1-L2-L3-N, 1=L1-L2-L3)",
+    "10": "PV Enable (0=Enable, 1=OFF)"
+   }
+  },
+  "43365": {
+   "title": "Generator Setting Switch",
+   "kind": "bitfield",
+   "summary": "Generator port configuration. Cannot be combined with AC Coupling.",
+   "bit_groups": [
+    {
+     "name": "Generator vs AC coupling",
+     "rule": "mutually_exclusive_with_register",
+     "bits": [
+      1
+     ],
+     "explain": "'With Generator' (BIT01) cannot be enabled at the same time as AC Coupling (BIT01 of register 43483). The two share the same physical port; one must be turned off before the other is turned on.",
+     "bit_labels": {
+      "1": "BIT01"
+     }
+    }
+   ],
+   "independent_bits": [
+    0
+   ],
+   "independent_explain": "BIT00 selects where the generator is connected — 0 generator port, 1 grid port. It is a configuration choice, not an enable.",
+   "write": "read_modify_write",
+   "sources": [
+    "v3.5 43365 description"
+   ],
+   "confidence": "high",
+   "related_registers": [
+    43483
+   ],
+   "register": 43365,
+   "key": "generatorSettingSwitch",
+   "name": "Generator Setting Switch",
+   "independent_bit_labels": {
+    "0": "BIT00"
+   }
+  },
+  "43451": {
+   "title": "Standard Operating Mode Switch",
+   "kind": "bitfield",
+   "summary": "Eight grid-support modes in one word. The reactive-power modes are mutually exclusive; Volt-watt controls REAL power and is independent of them.",
+   "bit_groups": [
+    {
+     "name": "Reactive power mode",
+     "rule": "at_most_one",
+     "bits": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      7
+     ],
+     "explain": "Volt-var (BIT01), Fixed PF (BIT02), Fixed reactive power (BIT03), Power-PF (BIT04), P-Q (BIT05) and Qref (BIT07) all decide the SAME quantity - the reactive power the inverter puts out - so at most one may be on. Turning one on must clear the other five. All six off is legal and means no reactive-power mode is running; that is why this is at_most_one and not exactly_one. BIT06 Volt-Control is excluded: see independent_bits.",
+     "bit_labels": {
+      "1": "Volt-var",
+      "2": "Fixed PF",
+      "3": "Fixed reactive power",
+      "4": "Power-PF",
+      "5": "P-Q",
+      "7": "Qref"
+     }
+    }
+   ],
+   "independent_bits": [
+    0,
+    6
+   ],
+   "independent_explain": "BIT00 Volt-watt curtails REAL power against voltage, so it does not compete with the reactive-power modes and grid codes commonly run it alongside one. BIT06 Volt-Control is the VDE4110 mode 0D piecewise-linear volt-to-reactive curve and BIT07 Qref the legacy mode 0E multi-point curve; the documents do not state whether 06 conflicts with the group, so it is left free rather than guessed at - clearing a mode the installer set is worse than leaving one set.",
+   "setpoint_registers": {
+    "43053": "PF setpoint for BIT02 Fixed PF.",
+    "43054": "Second PF setpoint. The v3.1 p58 description says 'only for mode 3', which is the 1-based index of BIT02 Fixed PF.",
+    "43051": "Reactive power setpoint. The v3.1 p58 description says 'only for mode 4', which is the 1-based index of BIT03 Fixed reactive power.",
+    "43052": "Inverter max output power limit. Not tied to any single mode."
+   },
+   "write": "read_modify_write",
+   "write_explain": "Change only the bits you mean. BIT08-15 are reserved and must never be written. A bare value write clears every other mode.",
+   "sources": [
+    "v3.5 p67",
+    "v3.1 p58"
+   ],
+   "confidence": "medium",
+   "confidence_note": "Bit numbering and labels are v3.5 p67 verbatim and are high confidence. The EXCLUSIVITY of the reactive group is inferred from the physics (six modes commanding one quantity) and from SolisCloud showing exactly one enabled; it has not been proven on the wire. BIT00 being independent is the same kind of inference. Confirm on a machine before relying on it.",
+   "register": 43451,
+   "key": "standardWorkingModeSwitchSetting",
+   "name": "Standard Operating Mode Switch",
+   "independent_bit_labels": {
+    "0": "Volt-watt",
+    "6": "Volt-Control"
+   }
+  },
+  "43483": {
+   "title": "Energy Storage Function Control Word",
+   "kind": "bitfield",
+   "summary": "Independent function switches. BIT07 is labelled peak-shaving, but it is the battery charging limit, not the peak-shaving work mode at 43110 BIT11.",
+   "bit_groups": [
+    {
+     "name": "AC coupling vs generator",
+     "rule": "mutually_exclusive_with_register",
+     "bits": [
+      1
+     ],
+     "explain": "AC Coupling enable (BIT01) cannot be on at the same time as 'With Generator' (BIT01 of register 43365). One must be turned off before the other is turned on; setting both leaves the port configuration invalid.",
+     "bit_labels": {
+      "1": "AC Coupling Enable"
+     }
+    }
+   ],
+   "independent_bits": [
+    0,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "independent_explain": "Ordinary on/off switches, freely combinable. Note two inverted senses: BIT03 'Allow export under self-consumption' is 0=enabled, 1=disabled, and BIT04 Backup2Load is 0=manual, 1=auto — neither follows the usual 0=off, 1=on.",
+   "bit_notes": {
+    "3": "Inverted: 0 = export allowed, 1 = export disabled.",
+    "4": "Inverted: 0 = manual, 1 = auto.",
+    "7": "Peak-shaving. Keep this name — Solis devices and the SolisCloud UI label it this way, so a fitter looking at the screen expects to see it. What it actually does: caps battery charging power so total grid import stays under the limit, backing the charging off as house load rises and letting it climb again as load falls. It only ever limits CHARGING; it does not change the work mode. This is a different function from the peak-shaving WORK MODE at 43110 BIT11, despite sharing the name. The two are independent and may be on at the same time."
+   },
+   "write": "read_modify_write",
+   "write_explain": "Read the register, change only your bits, write the whole word back. A bare write clears every other function switch.",
+   "related_registers": [
+    43365,
+    43110
+   ],
+   "related_explain": "BIT01 clashes with 43365 BIT01 (With Generator). BIT07 shares the name 'peak-shaving' with 43110 BIT11 but is a separate function — this one limits battery charging power against grid import, the other selects the work mode.",
+   "sources": [
+    "v3.4 43483 description",
+    "v3.5 43483 description",
+    "field confirmation 2026-08-20"
+   ],
+   "confidence": "high",
+   "register": 43483,
+   "key": "hybridFunctionControlWord",
+   "name": "Energy Storage Function Control Word",
+   "independent_bit_labels": {
+    "0": "Dual Backup Enable",
+    "2": "Smart Load Grid-connected Output",
+    "3": "Allow Export (active-low: 1 = blocked)",
+    "4": "Backup2Load Manual",
+    "5": "Backup2Load Auto",
+    "6": "Smart Load Off-grid",
+    "7": "Grid Import Limit"
+   }
+  },
+  "43506": {
+   "title": "Fault/Warning Record Query Method",
+   "kind": "enum",
+   "summary": "Half of a two-register query. Both registers must be written in the same operation.",
+   "write": "write_together",
+   "write_with": [
+    43507
+   ],
+   "write_explain": "43506 and 43507 must be written together for the query to run. Writing one alone does nothing. Results appear from 33679.",
+   "related_registers": [
+    33679
+   ],
+   "sources": [
+    "v3.5 43506 description"
+   ],
+   "confidence": "high",
+   "register": 43506,
+   "key": "queryMethodOfFaultWarningRecord",
+   "name": "Query method of fault/warning record"
+  },
+  "43707": {
+   "title": "Time-of-Use V2 Switch",
+   "kind": "bitfield",
+   "summary": "Only usable when the inverter reports Optimised Revenue V2 support.",
+   "write": "read_modify_write",
+   "depends_on": {
+    "register": 33289,
+    "explain": "Read 33289 first to confirm the inverter supports Optimised Revenue V2. On a unit that does not, this switch has no effect."
+   },
+   "sources": [
+    "v3.5 43707 description"
+   ],
+   "confidence": "high",
+   "register": 43707,
+   "key": "timeOfUseV2Switch",
+   "name": "TOU Grid‑Tied Optimization Revenue V2 Switch"
+  },
+  "43815": {
+   "title": "Generator Charging Switch",
+   "kind": "bitfield",
+   "summary": "One enable bit per generator charging period: BIT00 period 1 .. BIT05 period 6.",
+   "write": "read_modify_write",
+   "independent_bits": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "write_explain": "The source document states verbatim: 'Operation instructions for writing to BTIxx: The host computer first reads the current value of this register, changes the value of the corresponding BIT based on the current value as needed, and then writes;' Read 43815, change only the period bit being toggled, then write the whole word back. Writing a bare word would switch off every other generator charging period.",
+   "sources": [
+    "v3.1 p100 43815 description (table continues across the page break; continuation page names BIT02-BIT05 and BIT06~15 reserved)"
+   ],
+   "confidence": "high",
+   "register": 43815,
+   "key": "generatorChargingSwitch",
+   "name": "Generator charging switch",
+   "independent_bit_labels": {
+    "0": "Period 1 Enable",
+    "1": "Period 2 Enable",
+    "2": "Period 3 Enable",
+    "3": "Period 4 Enable",
+    "4": "Period 5 Enable",
+    "5": "Period 6 Enable"
+   }
+  },
+  "44102": {
+   "title": "Remote Dispatch System Limiting Switch",
+   "kind": "bitfield",
+   "summary": "Two independent limit switches in one word: BIT00 arms the import cap, BIT01 arms the export cap. It is not a four-value dropdown.",
+   "independent_bits": [
+    0,
+    1
+   ],
+   "independent_explain": "BIT00 enables the system power-draw (import) active power upper limit, whose value lives in 44103. BIT01 enables the system feed-in (export) active power upper limit, whose value lives in 44104. They are unrelated and may be set in any combination.",
+   "write": "read_modify_write",
+   "write_explain": "Read the register, change only the bit you mean, write the whole word back. Writing a bare 0-3 clears whichever switch you did not name, and nothing in the reply reports it.",
+   "related_registers": [
+    44100,
+    44103,
+    44104
+   ],
+   "related_explain": "Neither limit does anything until remote dispatch itself is enabled at 44100. BIT00 makes 44103 take effect; BIT01 makes 44104 take effect.",
+   "sources": [
+    "v3.5 44102 description"
+   ],
+   "confidence": "high",
+   "note": "Added 2026-08-20. The register was previously carried as a plain value, so an interface rendered it as a number box or a hand-written four-option dropdown; both write the whole word and silently reset the other switch. The document defines it bit by bit.",
+   "register": 44102,
+   "key": "remoteDispatchSystemLimitSwitch",
+   "name": "Remote Dispatch Mode – System Limiting Switch",
+   "independent_bit_labels": {
+    "0": "System import (power-draw) active power upper limit",
+    "1": "System feed-in (export) active power upper limit"
+   }
+  }
+ }
+}

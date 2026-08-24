@@ -119,6 +119,50 @@ webpack 5 / Jest via craco on the other, both on TypeScript 5.9.3.
 - **Pure functions only.** No React, no stores, no I/O. Widgets and transport
   stay in the apps.
 
+## What is in here
+
+| Folder | Holds |
+|---|---|
+| `src/decode/` | the arithmetic: sign, scale, decimals, word join/split |
+| `src/gospel/` | the register maps and their loaders |
+| `src/settings/` | which editor a register gets, and what saving it writes |
+
+`src/gospel/index.ts` is **namespaced**, because every family exports a `byKey`
+and a `ruleFor` meaning different things:
+
+```ts
+import { pvGospel, epmGospel } from '@solis/shared/gospel';
+pvGospel.byKey('mppt7Current');
+```
+
+The hybrid map is also re-exported flat, since it predates the others and many
+call sites already name `byAddress` bare.
+
+`planWrite` is the settings seam — it answers read-only, width, function code,
+word order and the read-modify-write merge in one call, and returns either a
+frame to send or a refusal to show:
+
+```ts
+const plan = planWrite({ address: 43110, value, register, rule, ownedMask, currentValue });
+if (plan.kind === 'refuse') showError(plan.reason);
+else send(plan.address, plan.fn, plan.words);
+```
+
+It does no I/O. When it needs the device's current word it returns
+`code: 'needs-read'`, the caller reads and asks again — so the module stays pure
+and transport stays in the app.
+
+## Adding a new subpath export
+
+Three edits, not one. Vite and webpack 5 honour `exports`; CRA's
+`moduleResolution: "node"` and `jest-resolve` do not:
+
+1. `exports` in `package.json`
+2. `typesVersions` in `package.json`
+3. `moduleNameMapper` in `SolisDebuggerToolExtension/craco.config.js`
+
+Miss one and the extension silently fails to resolve it.
+
 ## Layout
 
 ```
@@ -127,7 +171,25 @@ src/decode/
   types.ts        RegisterSpec (what a decode reads) and Decoded (what it returns)
   decode.ts       the rule order: join, sentinel, sign, enum, bits, scale
   fromGospel.ts   adapters from each app's map record to a RegisterSpec
+src/gospel/
+  generated/      the 9 maps, copied from the vault by scripts/sync-registers.mjs
+  gospel.ts       hybrid, the default map
+  pvGospel.ts epmGospel.ts faultGospel.ts     the other families
+  pvRules.ts epmRules.ts                      how a register may be SET
+src/settings/
+  bitRules.ts     bit-group vocabulary -> concrete bit ops, incl. mergeForWrite
+  packedFields.ts words that pack two or more fields
+  editorFor.ts    which editor a register gets — the gospel decides, nothing else
+  rowModel.ts     row editability, value text, save state
+  composites.ts   registers that are not a flat lookup (meter type/location)
+  planWrite.ts    what saving actually writes — the seam
 ```
+
+**`dist/` is gitignored**, so a fresh clone has no build. Run `npm run build`
+once before either app can import anything. `tsc` does not copy `.json`, so
+`scripts/copy-json.mjs` runs as part of both `build` and `watch` — and because
+`tsc --watch` never re-fires on a JSON change, re-syncing the maps needs a full
+`npm run build`.
 
 ## Test
 

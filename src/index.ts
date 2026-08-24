@@ -3,3 +3,5 @@
  * extension. See `src/decode/primitives.ts` for why this package exists.
  */
 export * from './decode/index';
+export * from './gospel';
+export * from './settings';

@@ -1,0 +1,67 @@
+{
+ "content_type": "register_rules",
+ "family": "ax",
+ "document": "Solis EPM-AX — register behaviour rules",
+ "rules": {
+  "settings:36511": {
+   "title": "FailSafe",
+   "kind": "enum",
+   "summary": "A safety watchdog. The AX keeps checking its CTs (the clamps that measure current) and its other inputs. If anything looks wrong, it tells the inverters to drop to low generation.",
+   "write": "plain",
+   "write_explain": "Write the code directly, using the extension's numbering: 0 Off, 1 Normal, 2 Shutdown, 3 No Communication, 4 Force Limit. Tauri's labels for the same codes are believed wrong and are kept only in the conflict record.",
+   "gotcha": "This is protection, not an on/off switch. The AX keeps checking its CTs (the clamps that measure current) and its other inputs; if anything is wrong it tells the inverters to go to low generation. A fault must never let a site keep exporting freely. Tauri labels these same codes as ramp modes (Hard Limit / Ramp Down / Ramp Up / Ramp Both) — that reading is not trusted.",
+   "related_registers": [
+    "settings:36510"
+   ],
+   "sources": [
+    "Tanner, 2026-08-21 — FailSafe checks CTs and other inputs; on a fault it commands inverters to low generation",
+    "serialTauriApp/src/mapper/EpmAx/settingMapper.ts valueMap",
+    "SolisDebuggerToolExtension/src/config/EpmAx/controlSettings.ts options"
+   ],
+   "confidence": "medium",
+   "overrides_do_not_write": "Tanner, 2026-08-21 — the extension's codes are trusted. Its EpmAx tables were the ones that proved right about codes on PV, and its config layer is the only source carrying a real note per setting."
+  },
+  "settings:36551": {
+   "title": "Control Protocol",
+   "kind": "enum",
+   "summary": "Picks which language the AX uses to talk to the inverters: Modbus, or the older 7E protocol.",
+   "write": "plain",
+   "write_explain": "Write the code directly, using the extension's numbering: 0 is 7E Protocol, 1 is Modbus. Tauri has these reversed.",
+   "gotcha": "Both apps agree this selects Modbus vs the older 7E protocol; they disagreed on the codes and the extension's order is the one used here. 7E works on all grid-tied inverters but may cause problems with hybrid inverters — so on a mixed site, Modbus is usually the safer choice.",
+   "sources": [
+    "SolisDebuggerToolExtension/src/config/EpmAx/controlSettings.ts — '7E protocol works on all grid-tied inverters but may cause issues with hybrid inverters'",
+    "serialTauriApp/src/mapper/EpmAx/settingMapper.ts valueMap"
+   ],
+   "confidence": "medium",
+   "overrides_do_not_write": "Tanner, 2026-08-21 — the extension's codes are trusted, same reasoning as failSafe."
+  },
+  "settings:36549": {
+   "title": "Meter 1 select",
+   "kind": "bitfield",
+   "summary": "One register holding two separate settings — the meter's make in the low byte, and where it is fitted in the high byte.",
+   "write": "read_modify_write",
+   "write_explain": "Read the register, change only the byte you mean to change, then write the whole word back. Writing a bare number clears the other byte.",
+   "gotcha": "Low byte is the meter type (0 Acrel, 1 Eastron, 2 Rayleigh, 3 Rayleigh F, 4 No Meter). High byte is where it sits (0 Grid, 1 Load, 2 Other PV, 3 Total PV, 4 Generator, 5 N/A). Writing '1' meaning 'Eastron' also sets the location to Grid, because the high byte becomes zero.",
+   "related_registers": [
+    "settings:36539"
+   ],
+   "sources": [
+    "SolisDebuggerToolExtension/src/config/EpmAx/meterSettings.ts — lowByte/highByte",
+    "serialTauriApp/src/devices/ax.ts — byteSelect editor"
+   ],
+   "confidence": "high"
+  },
+  "settings:36509": {
+   "title": "Inverter quantity",
+   "kind": "bitfield",
+   "summary": "One register holding two counts — how many PV inverters in the low byte, how many hybrid inverters in the high byte.",
+   "write": "read_modify_write",
+   "write_explain": "Read, change one byte, write the whole word back. These are counts, not codes.",
+   "gotcha": "On the EPM this same address is a single plain count called 'Inverter number'. On the AX it is two counts in one word. Writing an EPM-style count here sets the PV quantity and zeroes the hybrid quantity.",
+   "sources": [
+    "SolisDebuggerToolExtension/src/config/EpmAx/controlSettings.ts — inverterQtyPv / inverterQtyHybrid"
+   ],
+   "confidence": "high"
+  }
+ }
+}

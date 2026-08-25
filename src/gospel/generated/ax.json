@@ -179,38 +179,6 @@
  },
  "conflicts": [
   {
-   "register": "controlProtocol",
-   "issue": "enum_disagreement",
-   "tauri": {
-    "0": "Standard Modbus",
-    "1": "7E Protocol"
-   },
-   "extension": {
-    "0": "7E Protocol",
-    "1": "Modbus"
-   },
-   "device": "ax"
-  },
-  {
-   "register": "failSafe",
-   "issue": "enum_disagreement",
-   "tauri": {
-    "0": "Off (No Limiting)",
-    "1": "On (Hard Limit)",
-    "2": "Ramp Down",
-    "3": "Ramp Up",
-    "4": "Ramp Both"
-   },
-   "extension": {
-    "0": "Off",
-    "1": "Normal",
-    "2": "Shutdown",
-    "3": "No Communication",
-    "4": "Force Limit"
-   },
-   "device": "ax"
-  },
-  {
    "device": "ax",
    "space": "data",
    "address": 36017,
@@ -229,6 +197,24 @@
    "kept_from": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
    "other": "U16",
    "other_from": "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf"
+  },
+  {
+   "device": "ax",
+   "issue": "enum_disagreement",
+   "register": "failSafe",
+   "space": "settings",
+   "address": 36511,
+   "resolved": "extension_preferred",
+   "note": "The EXTENSION's labels, kept deliberately. Tauri calls 36511 a ramp control (Off (No Limiting) / On (Hard Limit) / Ramp Down / Ramp Up / Ramp Both); the extension calls it a failsafe mode (Off / Normal / Shutdown / No Communication / Force Limit). Those are not two spellings of one thing — they disagree about what the register DOES. The extension's reading was winning before its config file stopped being harvested, and dropping it silently replaced all five labels. No Solis document prints this enum, so neither is confirmed; the extension is preferred because it is the reading that has been in production. Source: extension src/config/EpmAx/miscSettings.ts. Category kept from the extension's src/config/EpmAx/*.ts. It groups the register in the settings UI; the derived fallback puts it elsewhere, which silently reshuffles the screen. Moved here so the map owns it."
+  },
+  {
+   "device": "ax",
+   "issue": "enum_disagreement",
+   "register": "controlProtocol",
+   "space": "settings",
+   "address": 36551,
+   "resolved": "extension_preferred",
+   "note": "The EXTENSION's labels, kept deliberately — and this one is INVERTED between the apps. Extension: 0 = 7E Protocol, 1 = Modbus. Tauri: 0 = Standard Modbus, 1 = 7E Protocol. One of them shows the wrong protocol name for whatever the device holds, and on a protocol selector that means an engineer switches the setting they were already on. The extension was winning before its config stopped being harvested; kept so removing that source changes nothing. Needs a live read to settle. Source: extension src/config/EpmAx/controlSettings.ts. Category kept from the extension's src/config/EpmAx/*.ts. It groups the register in the settings UI; the derived fallback puts it elsewhere, which silently reshuffles the screen. Moved here so the map owns it. Help text kept from the extension's src/config/EpmAx/*.ts — the prose an engineer reads beside the control. No Solis document carries it."
   },
   {
    "device": "ax",
@@ -2164,12 +2150,19 @@
      "app_sources": [
       "tauri"
      ],
+     "category": "Misc",
+     "category_source": "extension",
      "valid_range": {
       "min": 1,
       "max": 99
      },
-     "category": "Misc",
-     "category_source": "extension",
+     "note": "Write range, kept from the extension's src/config/EpmAx/*.ts. No Solis document prints a range for this register, so the map had none of its own — the range existed only as UI validation inside one app. It is a WRITE GUARD, not decoration: without it an out-of-range value reaches the device. Moved here so the map owns it and the config file is no longer load-bearing. Category kept from the extension's src/config/EpmAx/*.ts. It groups the register in the settings UI; the derived fallback puts it elsewhere, which silently reshuffles the screen. Moved here so the map owns it.",
+     "overridden": [
+      "category",
+      "category_source",
+      "note",
+      "valid_range"
+     ],
      "kind": "u16",
      "confidence": "confirmed"
     },
@@ -2203,12 +2196,19 @@
      "app_sources": [
       "tauri"
      ],
+     "category": "Meter",
+     "category_source": "extension",
      "valid_range": {
       "min": 1,
       "max": 10000
      },
-     "category": "Meter",
-     "category_source": "extension",
+     "note": "Write range, kept from the extension's src/config/EpmAx/*.ts. No Solis document prints a range for this register, so the map had none of its own — the range existed only as UI validation inside one app. It is a WRITE GUARD, not decoration: without it an out-of-range value reaches the device. Moved here so the map owns it and the config file is no longer load-bearing. Category kept from the extension's src/config/EpmAx/*.ts. It groups the register in the settings UI; the derived fallback puts it elsewhere, which silently reshuffles the screen. Moved here so the map owns it.",
+     "overridden": [
+      "category",
+      "category_source",
+      "note",
+      "valid_range"
+     ],
      "kind": "u16",
      "confidence": "confirmed"
     },
@@ -2247,12 +2247,19 @@
      "app_sources": [
       "tauri"
      ],
+     "category": "Control",
+     "category_source": "extension",
      "valid_range": {
       "min": 0,
       "max": 10000000
      },
-     "category": "Control",
-     "category_source": "extension",
+     "note": "Write range, kept from the extension's src/config/EpmAx/*.ts. No Solis document prints a range for this register, so the map had none of its own — the range existed only as UI validation inside one app. It is a WRITE GUARD, not decoration: without it an out-of-range value reaches the device. Moved here so the map owns it and the config file is no longer load-bearing. Category kept from the extension's src/config/EpmAx/*.ts. It groups the register in the settings UI; the derived fallback puts it elsewhere, which silently reshuffles the screen. Moved here so the map owns it.",
+     "overridden": [
+      "category",
+      "category_source",
+      "note",
+      "valid_range"
+     ],
      "kind": "s16",
      "confidence": "confirmed"
     },
@@ -2286,6 +2293,8 @@
      "app_sources": [
       "tauri"
      ],
+     "category": "Control",
+     "category_source": "extension",
      "byte_fields": {
       "low": {
        "key": "inverterQtyPv",
@@ -2302,12 +2311,18 @@
        ]
       }
      },
+     "note": "Byte-packed: low byte is the PV inverter count, high byte the hybrid count. No Solis document prints this split — the only source was the extension's src/config/EpmAx/controlSettings.ts, which is UI config and not evidence about the register. Recorded here instead so the map owns it. Without the split this reads as one 16-bit quantity, and a plain write clears whichever count the user did not touch, reporting nothing. Write range, kept from the extension's src/config/EpmAx/*.ts. No Solis document prints a range for this register, so the map had none of its own — the range existed only as UI validation inside one app. It is a WRITE GUARD, not decoration: without it an out-of-range value reaches the device. Moved here so the map owns it and the config file is no longer load-bearing. Category kept from the extension's src/config/EpmAx/*.ts. It groups the register in the settings UI; the derived fallback puts it elsewhere, which silently reshuffles the screen. Moved here so the map owns it.",
      "valid_range": {
       "min": 0,
       "max": 255
      },
-     "category": "Control",
-     "category_source": "extension",
+     "overridden": [
+      "byte_fields",
+      "category",
+      "category_source",
+      "note",
+      "valid_range"
+     ],
      "kind": "u16",
      "document_describes": "inverterNumber",
      "document_is_other_device": true,
@@ -2364,6 +2379,12 @@
      ],
      "category": "Control",
      "category_source": "extension",
+     "note": "Category kept from the extension's src/config/EpmAx/*.ts. It groups the register in the settings UI; the derived fallback puts it elsewhere, which silently reshuffles the screen. Moved here so the map owns it.",
+     "overridden": [
+      "category",
+      "category_source",
+      "note"
+     ],
      "kind": "u16",
      "document_describes": "epmMode",
      "document_is_other_device": true,
@@ -2407,14 +2428,25 @@
       "4": "Force Limit"
      },
      "value_map_sources": [
-      "extension",
       "tauri"
      ],
-     "value_map_resolved": "extension_preferred",
-     "value_map_disputed": true,
-     "do_not_write": false,
      "category": "Misc",
      "category_source": "extension",
+     "note": "The EXTENSION's labels, kept deliberately. Tauri calls 36511 a ramp control (Off (No Limiting) / On (Hard Limit) / Ramp Down / Ramp Up / Ramp Both); the extension calls it a failsafe mode (Off / Normal / Shutdown / No Communication / Force Limit). Those are not two spellings of one thing — they disagree about what the register DOES. The extension's reading was winning before its config file stopped being harvested, and dropping it silently replaced all five labels. No Solis document prints this enum, so neither is confirmed; the extension is preferred because it is the reading that has been in production. Source: extension src/config/EpmAx/miscSettings.ts. Category kept from the extension's src/config/EpmAx/*.ts. It groups the register in the settings UI; the derived fallback puts it elsewhere, which silently reshuffles the screen. Moved here so the map owns it.",
+     "value_map_disputed": true,
+     "value_map_resolved": "extension_preferred",
+     "do_not_write": false,
+     "do_not_write_cleared_because": "Tanner, 2026-08-21 — the extension's codes are trusted. Its EpmAx tables were the ones that proved right about codes on PV, and its config layer is the only source carrying a real note per setting.",
+     "overridden": [
+      "category",
+      "category_source",
+      "do_not_write",
+      "do_not_write_cleared_because",
+      "note",
+      "value_map",
+      "value_map_disputed",
+      "value_map_resolved"
+     ],
      "kind": "u16",
      "document_describes": "failSafeOnOff",
      "document_is_other_device": true,
@@ -2436,8 +2468,7 @@
       ],
       "confidence": "medium",
       "overrides_do_not_write": "Tanner, 2026-08-21 — the extension's codes are trusted. Its EpmAx tables were the ones that proved right about codes on PV, and its config layer is the only source carrying a real note per setting."
-     },
-     "do_not_write_cleared_because": "Tanner, 2026-08-21 — the extension's codes are trusted. Its EpmAx tables were the ones that proved right about codes on PV, and its config layer is the only source carrying a real note per setting."
+     }
     },
     {
      "address": 36512,
@@ -2505,6 +2536,12 @@
      ],
      "category": "Misc",
      "category_source": "extension",
+     "note": "Category kept from the extension's src/config/EpmAx/*.ts. It groups the register in the settings UI; the derived fallback puts it elsewhere, which silently reshuffles the screen. Moved here so the map owns it.",
+     "overridden": [
+      "category",
+      "category_source",
+      "note"
+     ],
      "kind": "u16",
      "document_describes": "epmDataTransmissionSwitch",
      "document_is_other_device": true,
@@ -2564,12 +2601,19 @@
      "app_sources": [
       "tauri"
      ],
+     "category": "Meter",
+     "category_source": "extension",
      "valid_range": {
       "min": 1,
       "max": 100
      },
-     "category": "Meter",
-     "category_source": "extension",
+     "note": "Write range, kept from the extension's src/config/EpmAx/*.ts. No Solis document prints a range for this register, so the map had none of its own — the range existed only as UI validation inside one app. It is a WRITE GUARD, not decoration: without it an out-of-range value reaches the device. Moved here so the map owns it and the config file is no longer load-bearing. Category kept from the extension's src/config/EpmAx/*.ts. It groups the register in the settings UI; the derived fallback puts it elsewhere, which silently reshuffles the screen. Moved here so the map owns it.",
+     "overridden": [
+      "category",
+      "category_source",
+      "note",
+      "valid_range"
+     ],
      "kind": "u16",
      "confidence": "confirmed"
     },
@@ -2630,6 +2674,12 @@
      ],
      "category": "Control",
      "category_source": "extension",
+     "note": "Category kept from the extension's src/config/EpmAx/*.ts. It groups the register in the settings UI; the derived fallback puts it elsewhere, which silently reshuffles the screen. Moved here so the map owns it.",
+     "overridden": [
+      "category",
+      "category_source",
+      "note"
+     ],
      "kind": "u16",
      "confidence": "confirmed"
     },
@@ -2726,6 +2776,8 @@
      "app_sources": [
       "tauri"
      ],
+     "category": "Meter",
+     "category_source": "extension",
      "byte_fields": {
       "low": {
        "key": "meter2Type",
@@ -2759,9 +2811,15 @@
        ]
       }
      },
+     "note": "Byte-packed: low byte is Meter2 type, high byte its location. Split and labels were carried only by the extension's src/config/EpmAx/meterSettings.ts; Tauri agrees on the labels but not the split. Moved here so the map is the source. A plain 16-bit write to this register silently clears the other half. Category kept from the extension's src/config/EpmAx/*.ts. It groups the register in the settings UI; the derived fallback puts it elsewhere, which silently reshuffles the screen. Moved here so the map owns it. Help text kept from the extension's src/config/EpmAx/*.ts — the prose an engineer reads beside the control. No Solis document carries it.",
      "app_description": "Location high byte: GRID = 0; LOAD = 1; OTHER_PV = 2; TOTAL_PV = 3; GENERATOR = 4; NA = 5",
-     "category": "Meter",
-     "category_source": "extension",
+     "overridden": [
+      "app_description",
+      "byte_fields",
+      "category",
+      "category_source",
+      "note"
+     ],
      "kind": null,
      "confidence": "app_only"
     },
@@ -2793,9 +2851,16 @@
      "value_map_sources": [
       "tauri"
      ],
-     "app_description": "System on/off control, which is good for monitoring",
      "category": "Control",
      "category_source": "extension",
+     "note": "Category kept from the extension's src/config/EpmAx/*.ts. It groups the register in the settings UI; the derived fallback puts it elsewhere, which silently reshuffles the screen. Moved here so the map owns it. Help text kept from the extension's src/config/EpmAx/*.ts — the prose an engineer reads beside the control. No Solis document carries it.",
+     "app_description": "System on/off control, which is good for monitoring",
+     "overridden": [
+      "app_description",
+      "category",
+      "category_source",
+      "note"
+     ],
      "kind": null,
      "confidence": "app_only"
     },
@@ -2820,13 +2885,21 @@
      "app_sources": [
       "tauri"
      ],
+     "category": "Misc",
+     "category_source": "extension",
      "valid_range": {
       "min": 0,
       "max": 9999
      },
+     "note": "Write range, kept from the extension's src/config/EpmAx/*.ts. No Solis document prints a range for this register, so the map had none of its own — the range existed only as UI validation inside one app. It is a WRITE GUARD, not decoration: without it an out-of-range value reaches the device. Moved here so the map owns it and the config file is no longer load-bearing. Category kept from the extension's src/config/EpmAx/*.ts. It groups the register in the settings UI; the derived fallback puts it elsewhere, which silently reshuffles the screen. Moved here so the map owns it. Help text kept from the extension's src/config/EpmAx/*.ts — the prose an engineer reads beside the control. No Solis document carries it.",
      "app_description": "Site access password",
-     "category": "Misc",
-     "category_source": "extension",
+     "overridden": [
+      "app_description",
+      "category",
+      "category_source",
+      "note",
+      "valid_range"
+     ],
      "kind": null,
      "confidence": "app_only"
     },
@@ -2858,9 +2931,16 @@
      "value_map_sources": [
       "tauri"
      ],
-     "app_description": "CT direction configuration",
      "category": "Meter",
      "category_source": "extension",
+     "note": "Category kept from the extension's src/config/EpmAx/*.ts. It groups the register in the settings UI; the derived fallback puts it elsewhere, which silently reshuffles the screen. Moved here so the map owns it. Help text kept from the extension's src/config/EpmAx/*.ts — the prose an engineer reads beside the control. No Solis document carries it.",
+     "app_description": "CT direction configuration",
+     "overridden": [
+      "app_description",
+      "category",
+      "category_source",
+      "note"
+     ],
      "kind": null,
      "confidence": "app_only"
     },
@@ -2885,13 +2965,21 @@
      "app_sources": [
       "tauri"
      ],
+     "category": "Control",
+     "category_source": "extension",
      "valid_range": {
       "min": 0,
       "max": 6000
      },
+     "note": "Write range, kept from the extension's src/config/EpmAx/*.ts. No Solis document prints a range for this register, so the map had none of its own — the range existed only as UI validation inside one app. It is a WRITE GUARD, not decoration: without it an out-of-range value reaches the device. Moved here so the map owns it and the config file is no longer load-bearing. Category kept from the extension's src/config/EpmAx/*.ts. It groups the register in the settings UI; the derived fallback puts it elsewhere, which silently reshuffles the screen. Moved here so the map owns it. Help text kept from the extension's src/config/EpmAx/*.ts — the prose an engineer reads beside the control. No Solis document carries it.",
      "app_description": "Maximum export current limit. Only applies when current control is enabled",
-     "category": "Control",
-     "category_source": "extension",
+     "overridden": [
+      "app_description",
+      "category",
+      "category_source",
+      "note",
+      "valid_range"
+     ],
      "kind": null,
      "confidence": "app_only"
     },
@@ -2949,13 +3037,21 @@
      "app_sources": [
       "tauri"
      ],
+     "category": "Control",
+     "category_source": "extension",
      "valid_range": {
       "min": 0,
       "max": 110
      },
+     "note": "Write range, kept from the extension's src/config/EpmAx/*.ts. No Solis document prints a range for this register, so the map had none of its own — the range existed only as UI validation inside one app. It is a WRITE GUARD, not decoration: without it an out-of-range value reaches the device. Moved here so the map owns it and the config file is no longer load-bearing. Category kept from the extension's src/config/EpmAx/*.ts. It groups the register in the settings UI; the derived fallback puts it elsewhere, which silently reshuffles the screen. Moved here so the map owns it. Help text kept from the extension's src/config/EpmAx/*.ts — the prose an engineer reads beside the control. No Solis document carries it.",
      "app_description": "Maximum control percentage. Epm still export limits but will limit the control percentage to this value",
-     "category": "Control",
-     "category_source": "extension",
+     "overridden": [
+      "app_description",
+      "category",
+      "category_source",
+      "note",
+      "valid_range"
+     ],
      "kind": null,
      "confidence": "app_only"
     },
@@ -2980,13 +3076,21 @@
      "app_sources": [
       "tauri"
      ],
+     "category": "Control",
+     "category_source": "extension",
      "valid_range": {
       "min": 0,
       "max": 9999
      },
+     "note": "Write range, kept from the extension's src/config/EpmAx/*.ts. No Solis document prints a range for this register, so the map had none of its own — the range existed only as UI validation inside one app. It is a WRITE GUARD, not decoration: without it an out-of-range value reaches the device. Moved here so the map owns it and the config file is no longer load-bearing. Category kept from the extension's src/config/EpmAx/*.ts. It groups the register in the settings UI; the derived fallback puts it elsewhere, which silently reshuffles the screen. Moved here so the map owns it. Help text kept from the extension's src/config/EpmAx/*.ts — the prose an engineer reads beside the control. No Solis document carries it.",
      "app_description": "Control deadband for stabilizing dynamic loads. Larger buffer means more stable but could reduce generation",
-     "category": "Control",
-     "category_source": "extension",
+     "overridden": [
+      "app_description",
+      "category",
+      "category_source",
+      "note",
+      "valid_range"
+     ],
      "kind": null,
      "confidence": "app_only"
     },
@@ -3011,6 +3115,8 @@
      "app_sources": [
       "tauri"
      ],
+     "category": "Meter",
+     "category_source": "extension",
      "byte_fields": {
       "low": {
        "key": "meter1Type",
@@ -3044,9 +3150,15 @@
        ]
       }
      },
+     "note": "Byte-packed: low byte is Meter1 type, high byte its location. Same provenance as 36539 — see that note. Category kept from the extension's src/config/EpmAx/*.ts. It groups the register in the settings UI; the derived fallback puts it elsewhere, which silently reshuffles the screen. Moved here so the map owns it. Help text kept from the extension's src/config/EpmAx/*.ts — the prose an engineer reads beside the control. No Solis document carries it.",
      "app_description": "Location high byte: GRID = 0; LOAD = 1; OTHER_PV = 2; TOTAL_PV = 3; GENERATOR = 4; NA = 5",
-     "category": "Meter",
-     "category_source": "extension",
+     "overridden": [
+      "app_description",
+      "byte_fields",
+      "category",
+      "category_source",
+      "note"
+     ],
      "kind": null,
      "confidence": "app_only",
      "rule": {
@@ -3087,9 +3199,16 @@
      "app_sources": [
       "tauri"
      ],
-     "app_description": "Clear energy measurements",
      "category": "Misc",
      "category_source": "extension",
+     "note": "Category kept from the extension's src/config/EpmAx/*.ts. It groups the register in the settings UI; the derived fallback puts it elsewhere, which silently reshuffles the screen. Moved here so the map owns it. Help text kept from the extension's src/config/EpmAx/*.ts — the prose an engineer reads beside the control. No Solis document carries it.",
+     "app_description": "Clear energy measurements",
+     "overridden": [
+      "app_description",
+      "category",
+      "category_source",
+      "note"
+     ],
      "kind": null,
      "confidence": "app_only"
     },
@@ -3119,15 +3238,27 @@
       "1": "Modbus"
      },
      "value_map_sources": [
-      "extension",
       "tauri"
      ],
-     "value_map_resolved": "extension_preferred",
-     "value_map_disputed": true,
-     "do_not_write": false,
-     "app_description": "Communication protocol selection. 7E protocol works on all grid-tied inverters but may cause issues with hybrid inverters",
      "category": "Control",
      "category_source": "extension",
+     "note": "The EXTENSION's labels, kept deliberately — and this one is INVERTED between the apps. Extension: 0 = 7E Protocol, 1 = Modbus. Tauri: 0 = Standard Modbus, 1 = 7E Protocol. One of them shows the wrong protocol name for whatever the device holds, and on a protocol selector that means an engineer switches the setting they were already on. The extension was winning before its config stopped being harvested; kept so removing that source changes nothing. Needs a live read to settle. Source: extension src/config/EpmAx/controlSettings.ts. Category kept from the extension's src/config/EpmAx/*.ts. It groups the register in the settings UI; the derived fallback puts it elsewhere, which silently reshuffles the screen. Moved here so the map owns it. Help text kept from the extension's src/config/EpmAx/*.ts — the prose an engineer reads beside the control. No Solis document carries it.",
+     "app_description": "Communication protocol selection. 7E protocol works on all grid-tied inverters but may cause issues with hybrid inverters",
+     "value_map_disputed": true,
+     "value_map_resolved": "extension_preferred",
+     "do_not_write": false,
+     "do_not_write_cleared_because": "Tanner, 2026-08-21 — the extension's codes are trusted, same reasoning as failSafe.",
+     "overridden": [
+      "app_description",
+      "category",
+      "category_source",
+      "do_not_write",
+      "do_not_write_cleared_because",
+      "note",
+      "value_map",
+      "value_map_disputed",
+      "value_map_resolved"
+     ],
      "kind": null,
      "confidence": "app_only",
      "rule": {
@@ -3143,8 +3274,7 @@
       ],
       "confidence": "medium",
       "overrides_do_not_write": "Tanner, 2026-08-21 — the extension's codes are trusted, same reasoning as failSafe."
-     },
-     "do_not_write_cleared_because": "Tanner, 2026-08-21 — the extension's codes are trusted, same reasoning as failSafe."
+     }
     },
     {
      "address": 36552,
@@ -3167,13 +3297,21 @@
      "app_sources": [
       "tauri"
      ],
+     "category": "Control",
+     "category_source": "extension",
      "valid_range": {
       "min": 0,
       "max": 100
      },
+     "note": "Write range, kept from the extension's src/config/EpmAx/*.ts. No Solis document prints a range for this register, so the map had none of its own — the range existed only as UI validation inside one app. It is a WRITE GUARD, not decoration: without it an out-of-range value reaches the device. Moved here so the map owns it and the config file is no longer load-bearing. Category kept from the extension's src/config/EpmAx/*.ts. It groups the register in the settings UI; the derived fallback puts it elsewhere, which silently reshuffles the screen. Moved here so the map owns it. Help text kept from the extension's src/config/EpmAx/*.ts — the prose an engineer reads beside the control. No Solis document carries it.",
      "app_description": "Generator spinning reserve setting. Only becomes available on LCD when you have a generator meter selected",
-     "category": "Control",
-     "category_source": "extension",
+     "overridden": [
+      "app_description",
+      "category",
+      "category_source",
+      "note",
+      "valid_range"
+     ],
      "kind": null,
      "confidence": "app_only"
     }

@@ -1826,12 +1826,19 @@
      "app_sources": [
       "tauri"
      ],
+     "category": "Misc",
+     "category_source": "extension",
      "valid_range": {
       "min": 1,
       "max": 99
      },
-     "category": "Misc",
-     "category_source": "extension",
+     "note": "Kept from the extension's src/config/EpmAx/*.ts, which EPM shared with AX. No Solis document prints a range for this register, so the guard existed only as UI validation inside one app. It is a WRITE GUARD: without it an out-of-range value reaches the device. Moved here so the map owns it.",
+     "overridden": [
+      "category",
+      "category_source",
+      "note",
+      "valid_range"
+     ],
      "kind": "u16",
      "confidence": "confirmed"
     },
@@ -1865,12 +1872,17 @@
      "app_sources": [
       "tauri"
      ],
+     "category": "Meter",
+     "category_source": "derived",
      "valid_range": {
       "min": 1,
       "max": 10000
      },
-     "category": "Meter",
-     "category_source": "extension",
+     "note": "Kept from the extension's src/config/EpmAx/*.ts, which EPM shared with AX. No Solis document prints a range for this register, so the guard existed only as UI validation inside one app. It is a WRITE GUARD: without it an out-of-range value reaches the device. Moved here so the map owns it.",
+     "overridden": [
+      "note",
+      "valid_range"
+     ],
      "kind": "u16",
      "confidence": "confirmed",
      "rule": {
@@ -1925,12 +1937,17 @@
      "app_sources": [
       "tauri"
      ],
+     "category": "Control",
+     "category_source": "derived",
      "valid_range": {
       "min": 0,
       "max": 10000000
      },
-     "category": "Control",
-     "category_source": "extension",
+     "note": "Kept from the extension's src/config/EpmAx/*.ts, which EPM shared with AX. No Solis document prints a range for this register, so the guard existed only as UI validation inside one app. It is a WRITE GUARD: without it an out-of-range value reaches the device. Moved here so the map owns it.",
+     "overridden": [
+      "note",
+      "valid_range"
+     ],
      "kind": "s16",
      "confidence": "confirmed",
      "rule": {

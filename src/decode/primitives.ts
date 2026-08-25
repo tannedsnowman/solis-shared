@@ -114,6 +114,27 @@ export function joinWords(
 }
 
 /**
+ * Recover the two words a store combined into one 32-bit number.
+ *
+ * THE READ-SIDE TWIN OF `joinWords`. A store holds a 32-bit register as one
+ * number, combined big-endian and unsigned; this hands the two words back in
+ * ADDRESS order, ready for `decodeWords` to apply the register's own
+ * `word_order` and sign.
+ *
+ * `>>> 0` first, because the combine used `<<`, which yields a SIGNED 32-bit
+ * result -- a pair whose high word has its top bit set arrives negative, and
+ * splitting it without reinterpreting unsigned loses the high word.
+ *
+ * NOT `splitInt32`, which CLAMPS to the signed range because it serves writes:
+ * clamping a stored reading would turn a large unsigned word into a different
+ * number that still looks like a number. This one never changes the value.
+ */
+export function wordsFromCombined(stored: number): [number, number] {
+  const u = stored >>> 0;
+  return [(u >>> 16) & 0xffff, u & 0xffff];
+}
+
+/**
  * Split a signed 32-bit value into `[highWord, lowWord]` for an FC16 write.
  *
  * Out-of-range input is CLAMPED, not wrapped. Silently sending 3 000 000 000 W

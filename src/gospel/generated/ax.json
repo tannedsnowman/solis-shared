@@ -18,6 +18,7 @@
   "offset": "Addresses are the frame addresses. The apps store a RELATIVE OFFSET from the space's base_address (data 36000, settings 36500); address = base + offset and wire_offset is 0. The PV -1 correction does NOT apply here.",
   "identity": "A register is identified by (device, space, address). EPM and EPM-AX share both base addresses but not their meanings — offsets 9, 10 and 13 name different settings on each device, which is why the two devices are separate files.",
   "width": "Width comes from the data-type column. U32/S32 are two consecutive registers, low word first.",
+  "kind": "The decoder vocabulary shared with the hybrid and PV maps: u16, s16, u32, s32, ascii, bit. Says WIDTH and SIGNEDNESS in one field, so a register the document mislabels can be corrected by an override without touching data_type, which records what the document actually printed. Derived by the same derive_kind the other two families use; width and data_type are kept beside it.",
   "word_order": "32-bit registers are LITTLE-endian (low word first) — the opposite of PV. Stated in each register's own description and confirmed against a live 3-phase capture on 2026-08-07.",
   "precedence": "overrides > app agreement > document (newest first). Both apps agree on every address, so conflicts here are app-vs-document or between the two apps' enum labels."
  },
@@ -231,6 +232,13 @@
   },
   {
    "device": "ax",
+   "issue": "span_width_disagree",
+   "space": "data",
+   "address": 36013,
+   "note": "address_end 36014 says 32-bit but width says 16. Width is trusted; the span is treated as a document error."
+  },
+  {
+   "device": "ax",
    "issue": "address_reused_by_other_device",
    "space": "settings",
    "address": 36509,
@@ -296,11 +304,11 @@
      "key": "epmAcVA",
      "offset": 0,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "confirmed"
     },
     {
@@ -331,11 +339,11 @@
      "key": "epmAcIA",
      "offset": 1,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "confirmed"
     },
     {
@@ -366,11 +374,11 @@
      "key": "epmAcVB",
      "offset": 2,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "confirmed"
     },
     {
@@ -401,11 +409,11 @@
      "key": "epmAcIB",
      "offset": 3,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "confirmed"
     },
     {
@@ -436,11 +444,11 @@
      "key": "epmAcVC",
      "offset": 4,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "confirmed"
     },
     {
@@ -471,11 +479,11 @@
      "key": "epmAcIC",
      "offset": 5,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "confirmed"
     },
     {
@@ -506,11 +514,11 @@
      "key": "epmPowerA",
      "offset": 6,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
      "category_source": "derived",
+     "kind": "s16",
      "confidence": "confirmed"
     },
     {
@@ -541,11 +549,11 @@
      "key": "epmPowerB",
      "offset": 7,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
      "category_source": "derived",
+     "kind": "s16",
      "confidence": "confirmed"
     },
     {
@@ -576,11 +584,11 @@
      "key": "epmPowerC",
      "offset": 8,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
      "category_source": "derived",
+     "kind": "s16",
      "confidence": "confirmed"
     },
     {
@@ -610,11 +618,11 @@
      "key": "epmPowerTotal",
      "offset": 9,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
      "category_source": "derived",
+     "kind": "s32",
      "confidence": "confirmed"
     },
     {
@@ -645,7 +653,6 @@
      "key": "inverterTotalPower",
      "offset": 11,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
@@ -654,6 +661,7 @@
      "overridden": [
       "note"
      ],
+     "kind": "s32",
      "confidence": "confirmed"
     },
     {
@@ -684,11 +692,11 @@
      "key": "reserve",
      "offset": 13,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
      "category_source": "derived",
+     "kind": null,
      "confidence": "confirmed"
     },
     {
@@ -712,6 +720,7 @@
      "primary_source": "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
      "category": "Data",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "document_only"
     },
     {
@@ -742,11 +751,11 @@
      "key": "powerControlPercent",
      "offset": 15,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "confirmed"
     },
     {
@@ -777,11 +786,11 @@
      "key": "ctRatio",
      "offset": 16,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "confirmed"
     },
     {
@@ -817,11 +826,11 @@
      "key": "backflowPowerSettingValue",
      "offset": 17,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
      "category_source": "derived",
+     "kind": "s16",
      "confidence": "confirmed"
     },
     {
@@ -852,11 +861,11 @@
      "key": "inverterNumberSettingValue",
      "offset": 18,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "confirmed"
     },
     {
@@ -887,11 +896,11 @@
      "key": "year",
      "offset": 19,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "confirmed"
     },
     {
@@ -922,11 +931,11 @@
      "key": "month",
      "offset": 20,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "confirmed"
     },
     {
@@ -957,11 +966,11 @@
      "key": "day",
      "offset": 21,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "confirmed"
     },
     {
@@ -992,11 +1001,11 @@
      "key": "hours",
      "offset": 22,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "confirmed"
     },
     {
@@ -1027,11 +1036,11 @@
      "key": "mins",
      "offset": 23,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "confirmed"
     },
     {
@@ -1062,11 +1071,11 @@
      "key": "seconds",
      "offset": 24,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "confirmed"
     },
     {
@@ -1097,11 +1106,11 @@
      "key": "failSafeOnOff",
      "offset": 25,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "confirmed"
     },
     {
@@ -1132,11 +1141,11 @@
      "key": "gridPF",
      "offset": 26,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
      "category_source": "derived",
+     "kind": "s16",
      "confidence": "confirmed"
     },
     {
@@ -1167,11 +1176,11 @@
      "key": "gridFreqMeter",
      "offset": 27,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "confirmed"
     },
     {
@@ -1202,11 +1211,11 @@
      "key": "totalLoadPower",
      "offset": 28,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
      "category_source": "derived",
+     "kind": "u32",
      "confidence": "confirmed"
     },
     {
@@ -1237,23 +1246,12 @@
      "key": "sn",
      "offset": 30,
      "app_sources": [
-      "extension",
       "tauri"
      ],
-     "app_span": 16,
-     "span_disputed": {
-      "extension": [
-       30,
-       16
-      ],
-      "tauri": [
-       30,
-       1
-      ]
-     },
      "category": "Data",
      "category_source": "derived",
      "kind": "ascii",
+     "app_span": 16,
      "note": "Same as the EPM override at this address — the AX data block is the same 36000 table. Serial number as TEXT, 16 registers from offset 30, per the extension. Tauri's 1-register mapping would show only the first two characters. Not confirmed by any document (36030-36049 is printed as 'Reserve'), so remove this if a live read shows anything other than readable text.",
      "overridden": [
       "app_span",
@@ -1290,11 +1288,11 @@
      "key": "inverterTotalGenerationEnergy",
      "offset": 50,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
      "category_source": "derived",
+     "kind": "u32",
      "confidence": "confirmed"
     },
     {
@@ -1325,11 +1323,11 @@
      "key": "loadTotalConsumptionEnergy",
      "offset": 52,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
      "category_source": "derived",
+     "kind": "u32",
      "confidence": "confirmed"
     },
     {
@@ -1360,11 +1358,11 @@
      "key": "gridImportTotalActiveEnergy",
      "offset": 54,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
      "category_source": "derived",
+     "kind": "u32",
      "confidence": "confirmed"
     },
     {
@@ -1395,11 +1393,11 @@
      "key": "gridExportTotalActiveEnergy",
      "offset": 56,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
      "category_source": "derived",
+     "kind": "u32",
      "confidence": "confirmed"
     },
     {
@@ -1430,11 +1428,11 @@
      "key": "epmDataTransmissionSwitch",
      "offset": 58,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "confirmed"
     },
     {
@@ -1465,11 +1463,11 @@
      "key": "batchUpgradeFlag",
      "offset": 59,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "confirmed"
     },
     {
@@ -1499,11 +1497,11 @@
      "key": "modelNo",
      "offset": 60,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "confirmed"
     },
     {
@@ -1527,11 +1525,11 @@
      "key": "ptValue",
      "offset": 61,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "confirmed"
     },
     {
@@ -1554,6 +1552,7 @@
      "primary_source": "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
      "category": "Data",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "document_only"
     },
     {
@@ -1576,6 +1575,7 @@
      "primary_source": "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
      "category": "Data",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "document_only"
     },
     {
@@ -1598,6 +1598,7 @@
      "primary_source": "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
      "category": "Data",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "document_only"
     },
     {
@@ -1620,6 +1621,7 @@
      "primary_source": "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
      "category": "Data",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "document_only"
     },
     {
@@ -1642,6 +1644,7 @@
      "primary_source": "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
      "category": "Data",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "document_only"
     },
     {
@@ -1664,6 +1667,7 @@
      "primary_source": "[Grid-Tied EN 2021.5.6]RS485_MODBUS(INV-3000ID EPM-36000ID).pdf",
      "category": "Data",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "document_only"
     },
     {
@@ -1680,12 +1684,11 @@
      "scale": 1.0,
      "units": "W",
      "present_in": [],
-     "primary_source": "app:extension+tauri",
+     "primary_source": "app:tauri",
      "undocumented": true,
      "key": "gridPt",
      "offset": 71,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
@@ -1695,6 +1698,7 @@
       "note",
       "units"
      ],
+     "kind": null,
      "confidence": "app_only"
     },
     {
@@ -1711,12 +1715,11 @@
      "scale": 1.0,
      "units": "W",
      "present_in": [],
-     "primary_source": "app:extension+tauri",
+     "primary_source": "app:tauri",
      "undocumented": true,
      "key": "generatorPowerA",
      "offset": 80,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
@@ -1726,6 +1729,7 @@
       "note",
       "units"
      ],
+     "kind": null,
      "confidence": "app_only"
     },
     {
@@ -1742,12 +1746,11 @@
      "scale": 1.0,
      "units": "W",
      "present_in": [],
-     "primary_source": "app:extension+tauri",
+     "primary_source": "app:tauri",
      "undocumented": true,
      "key": "generatorPowerB",
      "offset": 82,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
@@ -1757,6 +1760,7 @@
       "note",
       "units"
      ],
+     "kind": null,
      "confidence": "app_only"
     },
     {
@@ -1773,12 +1777,11 @@
      "scale": 1.0,
      "units": "W",
      "present_in": [],
-     "primary_source": "app:extension+tauri",
+     "primary_source": "app:tauri",
      "undocumented": true,
      "key": "generatorPowerC",
      "offset": 84,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
@@ -1788,6 +1791,7 @@
       "note",
       "units"
      ],
+     "kind": null,
      "confidence": "app_only"
     },
     {
@@ -1804,12 +1808,11 @@
      "scale": 1.0,
      "units": "W",
      "present_in": [],
-     "primary_source": "app:extension+tauri",
+     "primary_source": "app:tauri",
      "undocumented": true,
      "key": "generatorPowerT",
      "offset": 86,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
@@ -1819,6 +1822,7 @@
       "note",
       "units"
      ],
+     "kind": null,
      "confidence": "app_only"
     },
     {
@@ -1835,12 +1839,11 @@
      "scale": 1.0,
      "units": "V",
      "present_in": [],
-     "primary_source": "app:extension+tauri",
+     "primary_source": "app:tauri",
      "undocumented": true,
      "key": "generatorVoltage",
      "offset": 88,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
@@ -1850,6 +1853,7 @@
       "note",
       "units"
      ],
+     "kind": null,
      "confidence": "app_only"
     },
     {
@@ -1866,16 +1870,16 @@
      "scale": 1.0,
      "units": "",
      "present_in": [],
-     "primary_source": "app:extension+tauri",
+     "primary_source": "app:tauri",
      "undocumented": true,
      "key": "controllerStatus",
      "offset": 89,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
      "category_source": "derived",
+     "kind": null,
      "confidence": "app_only"
     },
     {
@@ -1892,12 +1896,11 @@
      "scale": 1.0,
      "units": "kWh",
      "present_in": [],
-     "primary_source": "app:extension+tauri",
+     "primary_source": "app:tauri",
      "undocumented": true,
      "key": "generatorEnergy",
      "offset": 90,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Data",
@@ -1907,6 +1910,7 @@
       "note",
       "units"
      ],
+     "kind": null,
      "confidence": "app_only"
     }
    ]
@@ -1948,11 +1952,11 @@
      "key": "year",
      "offset": 0,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Misc",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "confirmed"
     },
     {
@@ -1983,11 +1987,11 @@
      "key": "month",
      "offset": 1,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Misc",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "confirmed"
     },
     {
@@ -2018,11 +2022,11 @@
      "key": "day",
      "offset": 2,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Misc",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "confirmed"
     },
     {
@@ -2053,11 +2057,11 @@
      "key": "hours",
      "offset": 3,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Misc",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "confirmed"
     },
     {
@@ -2088,11 +2092,11 @@
      "key": "mins",
      "offset": 4,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Misc",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "confirmed"
     },
     {
@@ -2123,11 +2127,11 @@
      "key": "seconds",
      "offset": 5,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "category": "Misc",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "confirmed"
     },
     {
@@ -2158,7 +2162,6 @@
      "key": "slaveAddress",
      "offset": 6,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "valid_range": {
@@ -2167,6 +2170,7 @@
      },
      "category": "Misc",
      "category_source": "extension",
+     "kind": "u16",
      "confidence": "confirmed"
     },
     {
@@ -2197,7 +2201,6 @@
      "key": "ctRatio",
      "offset": 7,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "valid_range": {
@@ -2206,6 +2209,7 @@
      },
      "category": "Meter",
      "category_source": "extension",
+     "kind": "u16",
      "confidence": "confirmed"
     },
     {
@@ -2241,7 +2245,6 @@
      "key": "backflowPower",
      "offset": 8,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "valid_range": {
@@ -2250,6 +2253,7 @@
      },
      "category": "Control",
      "category_source": "extension",
+     "kind": "s16",
      "confidence": "confirmed"
     },
     {
@@ -2280,7 +2284,6 @@
      "key": "inverterQty",
      "offset": 9,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "byte_fields": {
@@ -2305,6 +2308,7 @@
      },
      "category": "Control",
      "category_source": "extension",
+     "kind": "u16",
      "document_describes": "inverterNumber",
      "document_is_other_device": true,
      "confidence": "app_only",
@@ -2349,7 +2353,6 @@
      "key": "perPhaseLimiting",
      "offset": 10,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "value_map": {
@@ -2361,6 +2364,7 @@
      ],
      "category": "Control",
      "category_source": "extension",
+     "kind": "u16",
      "document_describes": "epmMode",
      "document_is_other_device": true,
      "confidence": "app_only"
@@ -2393,7 +2397,6 @@
      "key": "failSafe",
      "offset": 11,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "value_map": {
@@ -2412,6 +2415,7 @@
      "do_not_write": false,
      "category": "Misc",
      "category_source": "extension",
+     "kind": "u16",
      "document_describes": "failSafeOnOff",
      "document_is_other_device": true,
      "confidence": "app_only",
@@ -2459,6 +2463,7 @@
      "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
      "category": "Misc",
      "category_source": "derived",
+     "kind": null,
      "confidence": "document_only"
     },
     {
@@ -2489,7 +2494,6 @@
      "key": "transmitOnOff",
      "offset": 13,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "value_map": {
@@ -2501,6 +2505,7 @@
      ],
      "category": "Misc",
      "category_source": "extension",
+     "kind": "u16",
      "document_describes": "epmDataTransmissionSwitch",
      "document_is_other_device": true,
      "confidence": "app_only"
@@ -2532,6 +2537,7 @@
      "primary_source": "RS485_MODBUSSolis PVGrid-ConnectedInverter V17.pdf",
      "category": "Control",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "document_only"
     },
     {
@@ -2556,7 +2562,6 @@
      "key": "ptRatio",
      "offset": 15,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "valid_range": {
@@ -2565,6 +2570,7 @@
      },
      "category": "Meter",
      "category_source": "extension",
+     "kind": "u16",
      "confidence": "confirmed"
     },
     {
@@ -2588,6 +2594,7 @@
      "primary_source": "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
      "category": "Misc",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "document_only"
     },
     {
@@ -2612,7 +2619,6 @@
      "key": "currentControl",
      "offset": 17,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "value_map": {
@@ -2624,6 +2630,7 @@
      ],
      "category": "Control",
      "category_source": "extension",
+     "kind": "u16",
      "confidence": "confirmed"
     },
     {
@@ -2647,6 +2654,7 @@
      "primary_source": "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
      "category": "Misc",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "document_only"
     },
     {
@@ -2670,6 +2678,7 @@
      "primary_source": "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
      "category": "Misc",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "document_only"
     },
     {
@@ -2693,6 +2702,7 @@
      "primary_source": "[Grid-Tied EN 2020.5.27]RS485_MODBUS(INV-3000ID EPM-36000ID)(1).pdf",
      "category": "Misc",
      "category_source": "derived",
+     "kind": "u16",
      "confidence": "document_only"
     },
     {
@@ -2709,12 +2719,11 @@
      "scale": 1.0,
      "units": "",
      "present_in": [],
-     "primary_source": "app:extension+tauri",
+     "primary_source": "app:tauri",
      "undocumented": true,
      "key": "meter2Select",
      "offset": 39,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "byte_fields": {
@@ -2753,6 +2762,7 @@
      "app_description": "Location high byte: GRID = 0; LOAD = 1; OTHER_PV = 2; TOTAL_PV = 3; GENERATOR = 4; NA = 5",
      "category": "Meter",
      "category_source": "extension",
+     "kind": null,
      "confidence": "app_only"
     },
     {
@@ -2769,12 +2779,11 @@
      "scale": 1.0,
      "units": "",
      "present_in": [],
-     "primary_source": "app:extension+tauri",
+     "primary_source": "app:tauri",
      "undocumented": true,
      "key": "onOff",
      "offset": 40,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "value_map": {
@@ -2787,6 +2796,7 @@
      "app_description": "System on/off control, which is good for monitoring",
      "category": "Control",
      "category_source": "extension",
+     "kind": null,
      "confidence": "app_only"
     },
     {
@@ -2803,12 +2813,11 @@
      "scale": 1.0,
      "units": "",
      "present_in": [],
-     "primary_source": "app:extension+tauri",
+     "primary_source": "app:tauri",
      "undocumented": true,
      "key": "sitePassword",
      "offset": 41,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "valid_range": {
@@ -2818,6 +2827,7 @@
      "app_description": "Site access password",
      "category": "Misc",
      "category_source": "extension",
+     "kind": null,
      "confidence": "app_only"
     },
     {
@@ -2834,12 +2844,11 @@
      "scale": 1.0,
      "units": "",
      "present_in": [],
-     "primary_source": "app:extension+tauri",
+     "primary_source": "app:tauri",
      "undocumented": true,
      "key": "ctDirection",
      "offset": 43,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "value_map": {
@@ -2852,6 +2861,7 @@
      "app_description": "CT direction configuration",
      "category": "Meter",
      "category_source": "extension",
+     "kind": null,
      "confidence": "app_only"
     },
     {
@@ -2868,12 +2878,11 @@
      "scale": 1.0,
      "units": "",
      "present_in": [],
-     "primary_source": "app:extension+tauri",
+     "primary_source": "app:tauri",
      "undocumented": true,
      "key": "backflowCurrent",
      "offset": 45,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "valid_range": {
@@ -2883,6 +2892,7 @@
      "app_description": "Maximum export current limit. Only applies when current control is enabled",
      "category": "Control",
      "category_source": "extension",
+     "kind": null,
      "confidence": "app_only"
     },
     {
@@ -2899,12 +2909,11 @@
      "scale": 1.0,
      "units": "",
      "present_in": [],
-     "primary_source": "app:extension+tauri",
+     "primary_source": "app:tauri",
      "undocumented": true,
      "key": "ctPolarityCheck",
      "offset": 46,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "value_map": {
@@ -2916,6 +2925,7 @@
      ],
      "category": "Control",
      "category_source": "derived",
+     "kind": null,
      "confidence": "app_only"
     },
     {
@@ -2932,12 +2942,11 @@
      "scale": 1.0,
      "units": "",
      "present_in": [],
-     "primary_source": "app:extension+tauri",
+     "primary_source": "app:tauri",
      "undocumented": true,
      "key": "maxControlPercent",
      "offset": 47,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "valid_range": {
@@ -2947,6 +2956,7 @@
      "app_description": "Maximum control percentage. Epm still export limits but will limit the control percentage to this value",
      "category": "Control",
      "category_source": "extension",
+     "kind": null,
      "confidence": "app_only"
     },
     {
@@ -2963,12 +2973,11 @@
      "scale": 1.0,
      "units": "",
      "present_in": [],
-     "primary_source": "app:extension+tauri",
+     "primary_source": "app:tauri",
      "undocumented": true,
      "key": "buffer",
      "offset": 48,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "valid_range": {
@@ -2978,6 +2987,7 @@
      "app_description": "Control deadband for stabilizing dynamic loads. Larger buffer means more stable but could reduce generation",
      "category": "Control",
      "category_source": "extension",
+     "kind": null,
      "confidence": "app_only"
     },
     {
@@ -2994,12 +3004,11 @@
      "scale": 1.0,
      "units": "",
      "present_in": [],
-     "primary_source": "app:extension+tauri",
+     "primary_source": "app:tauri",
      "undocumented": true,
      "key": "meterSelect",
      "offset": 49,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "byte_fields": {
@@ -3038,6 +3047,7 @@
      "app_description": "Location high byte: GRID = 0; LOAD = 1; OTHER_PV = 2; TOTAL_PV = 3; GENERATOR = 4; NA = 5",
      "category": "Meter",
      "category_source": "extension",
+     "kind": null,
      "confidence": "app_only",
      "rule": {
       "title": "Meter 1 select",
@@ -3070,17 +3080,17 @@
      "scale": 1.0,
      "units": "",
      "present_in": [],
-     "primary_source": "app:extension+tauri",
+     "primary_source": "app:tauri",
      "undocumented": true,
      "key": "clearEnergy",
      "offset": 50,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "app_description": "Clear energy measurements",
      "category": "Misc",
      "category_source": "extension",
+     "kind": null,
      "confidence": "app_only"
     },
     {
@@ -3097,12 +3107,11 @@
      "scale": 1.0,
      "units": "",
      "present_in": [],
-     "primary_source": "app:extension+tauri",
+     "primary_source": "app:tauri",
      "undocumented": true,
      "key": "controlProtocol",
      "offset": 51,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "value_map": {
@@ -3119,6 +3128,7 @@
      "app_description": "Communication protocol selection. 7E protocol works on all grid-tied inverters but may cause issues with hybrid inverters",
      "category": "Control",
      "category_source": "extension",
+     "kind": null,
      "confidence": "app_only",
      "rule": {
       "title": "Control Protocol",
@@ -3150,12 +3160,11 @@
      "scale": 1.0,
      "units": "",
      "present_in": [],
-     "primary_source": "app:extension+tauri",
+     "primary_source": "app:tauri",
      "undocumented": true,
      "key": "generatorSpinningReserve",
      "offset": 52,
      "app_sources": [
-      "extension",
       "tauri"
      ],
      "valid_range": {
@@ -3165,6 +3174,7 @@
      "app_description": "Generator spinning reserve setting. Only becomes available on LCD when you have a generator meter selected",
      "category": "Control",
      "category_source": "extension",
+     "kind": null,
      "confidence": "app_only"
     }
    ]
@@ -3178,16 +3188,520 @@
   {
    "device": "ax",
    "space": "data",
+   "key": "apparentPowerA_calc",
+   "issue": "missing_from_extension",
+   "offset": 0
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "apparentPowerB_calc",
+   "issue": "missing_from_extension",
+   "offset": 2
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "apparentPowerC_calc",
+   "issue": "missing_from_extension",
+   "offset": 4
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "backflowPowerSettingValue",
+   "issue": "missing_from_extension",
+   "offset": 17
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "batchUpgradeFlag",
+   "issue": "missing_from_extension",
+   "offset": 59
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "controllerStatus",
+   "issue": "missing_from_extension",
+   "offset": 89
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "ctRatio",
+   "issue": "missing_from_extension",
+   "offset": 16
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "day",
+   "issue": "missing_from_extension",
+   "offset": 21
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "deviceType",
+   "issue": "missing_from_extension",
+   "offset": -1
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "epmAcIA",
+   "issue": "missing_from_extension",
+   "offset": 1
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "epmAcIB",
+   "issue": "missing_from_extension",
+   "offset": 3
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "epmAcIC",
+   "issue": "missing_from_extension",
+   "offset": 5
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "epmAcVA",
+   "issue": "missing_from_extension",
+   "offset": 0
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "epmAcVB",
+   "issue": "missing_from_extension",
+   "offset": 2
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "epmAcVC",
+   "issue": "missing_from_extension",
+   "offset": 4
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "epmDataTransmissionSwitch",
+   "issue": "missing_from_extension",
+   "offset": 58
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "epmPowerA",
+   "issue": "missing_from_extension",
+   "offset": 6
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "epmPowerB",
+   "issue": "missing_from_extension",
+   "offset": 7
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "epmPowerC",
+   "issue": "missing_from_extension",
+   "offset": 8
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "epmPowerTotal",
+   "issue": "missing_from_extension",
+   "offset": 9
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "failSafeOnOff",
+   "issue": "missing_from_extension",
+   "offset": 25
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "generatorEnergy",
+   "issue": "missing_from_extension",
+   "offset": 90
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "generatorPowerA",
+   "issue": "missing_from_extension",
+   "offset": 80
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "generatorPowerB",
+   "issue": "missing_from_extension",
+   "offset": 82
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "generatorPowerC",
+   "issue": "missing_from_extension",
+   "offset": 84
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "generatorPowerT",
+   "issue": "missing_from_extension",
+   "offset": 86
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "generatorVoltage",
+   "issue": "missing_from_extension",
+   "offset": 88
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "gridExportTotalActiveEnergy",
+   "issue": "missing_from_extension",
+   "offset": 56
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "gridFreqMeter",
+   "issue": "missing_from_extension",
+   "offset": 27
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "gridImportTotalActiveEnergy",
+   "issue": "missing_from_extension",
+   "offset": 54
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "gridPF",
+   "issue": "missing_from_extension",
+   "offset": 26
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "gridPt",
+   "issue": "missing_from_extension",
+   "offset": 71
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "hours",
+   "issue": "missing_from_extension",
+   "offset": 22
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "inverterNumberSettingValue",
+   "issue": "missing_from_extension",
+   "offset": 18
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "inverterTotalGenerationEnergy",
+   "issue": "missing_from_extension",
+   "offset": 50
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "inverterTotalPower",
+   "issue": "missing_from_extension",
+   "offset": 11
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "loadTotalConsumptionEnergy",
+   "issue": "missing_from_extension",
+   "offset": 52
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "mins",
+   "issue": "missing_from_extension",
+   "offset": 23
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "modelNo",
+   "issue": "missing_from_extension",
+   "offset": 60
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "month",
+   "issue": "missing_from_extension",
+   "offset": 20
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "powerControlPercent",
+   "issue": "missing_from_extension",
+   "offset": 15
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "ptValue",
+   "issue": "missing_from_extension",
+   "offset": 61
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "reserve",
+   "issue": "missing_from_extension",
+   "offset": 13
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "seconds",
+   "issue": "missing_from_extension",
+   "offset": 24
+  },
+  {
+   "device": "ax",
+   "space": "data",
    "key": "sn",
-   "issue": "offset_disagreement",
-   "extension": [
-    30,
-    16
-   ],
-   "tauri": [
-    30,
-    1
-   ]
+   "issue": "missing_from_extension",
+   "offset": 30
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "totalLoadPower",
+   "issue": "missing_from_extension",
+   "offset": 28
+  },
+  {
+   "device": "ax",
+   "space": "data",
+   "key": "year",
+   "issue": "missing_from_extension",
+   "offset": 19
+  },
+  {
+   "device": "ax",
+   "space": "settings",
+   "key": "backflowCurrent",
+   "issue": "missing_from_extension",
+   "offset": 45
+  },
+  {
+   "device": "ax",
+   "space": "settings",
+   "key": "backflowPower",
+   "issue": "missing_from_extension",
+   "offset": 8
+  },
+  {
+   "device": "ax",
+   "space": "settings",
+   "key": "buffer",
+   "issue": "missing_from_extension",
+   "offset": 48
+  },
+  {
+   "device": "ax",
+   "space": "settings",
+   "key": "clearEnergy",
+   "issue": "missing_from_extension",
+   "offset": 50
+  },
+  {
+   "device": "ax",
+   "space": "settings",
+   "key": "controlProtocol",
+   "issue": "missing_from_extension",
+   "offset": 51
+  },
+  {
+   "device": "ax",
+   "space": "settings",
+   "key": "ctDirection",
+   "issue": "missing_from_extension",
+   "offset": 43
+  },
+  {
+   "device": "ax",
+   "space": "settings",
+   "key": "ctPolarityCheck",
+   "issue": "missing_from_extension",
+   "offset": 46
+  },
+  {
+   "device": "ax",
+   "space": "settings",
+   "key": "ctRatio",
+   "issue": "missing_from_extension",
+   "offset": 7
+  },
+  {
+   "device": "ax",
+   "space": "settings",
+   "key": "currentControl",
+   "issue": "missing_from_extension",
+   "offset": 17
+  },
+  {
+   "device": "ax",
+   "space": "settings",
+   "key": "day",
+   "issue": "missing_from_extension",
+   "offset": 2
+  },
+  {
+   "device": "ax",
+   "space": "settings",
+   "key": "failSafe",
+   "issue": "missing_from_extension",
+   "offset": 11
+  },
+  {
+   "device": "ax",
+   "space": "settings",
+   "key": "generatorSpinningReserve",
+   "issue": "missing_from_extension",
+   "offset": 52
+  },
+  {
+   "device": "ax",
+   "space": "settings",
+   "key": "hours",
+   "issue": "missing_from_extension",
+   "offset": 3
+  },
+  {
+   "device": "ax",
+   "space": "settings",
+   "key": "inverterQty",
+   "issue": "missing_from_extension",
+   "offset": 9
+  },
+  {
+   "device": "ax",
+   "space": "settings",
+   "key": "maxControlPercent",
+   "issue": "missing_from_extension",
+   "offset": 47
+  },
+  {
+   "device": "ax",
+   "space": "settings",
+   "key": "meter2Select",
+   "issue": "missing_from_extension",
+   "offset": 39
+  },
+  {
+   "device": "ax",
+   "space": "settings",
+   "key": "meterSelect",
+   "issue": "missing_from_extension",
+   "offset": 49
+  },
+  {
+   "device": "ax",
+   "space": "settings",
+   "key": "mins",
+   "issue": "missing_from_extension",
+   "offset": 4
+  },
+  {
+   "device": "ax",
+   "space": "settings",
+   "key": "month",
+   "issue": "missing_from_extension",
+   "offset": 1
+  },
+  {
+   "device": "ax",
+   "space": "settings",
+   "key": "onOff",
+   "issue": "missing_from_extension",
+   "offset": 40
+  },
+  {
+   "device": "ax",
+   "space": "settings",
+   "key": "perPhaseLimiting",
+   "issue": "missing_from_extension",
+   "offset": 10
+  },
+  {
+   "device": "ax",
+   "space": "settings",
+   "key": "ptRatio",
+   "issue": "missing_from_extension",
+   "offset": 15
+  },
+  {
+   "device": "ax",
+   "space": "settings",
+   "key": "seconds",
+   "issue": "missing_from_extension",
+   "offset": 5
+  },
+  {
+   "device": "ax",
+   "space": "settings",
+   "key": "sitePassword",
+   "issue": "missing_from_extension",
+   "offset": 41
+  },
+  {
+   "device": "ax",
+   "space": "settings",
+   "key": "slaveAddress",
+   "issue": "missing_from_extension",
+   "offset": 6
+  },
+  {
+   "device": "ax",
+   "space": "settings",
+   "key": "transmitOnOff",
+   "issue": "missing_from_extension",
+   "offset": 13
+  },
+  {
+   "device": "ax",
+   "space": "settings",
+   "key": "year",
+   "issue": "missing_from_extension",
+   "offset": 0
   }
  ]
 }

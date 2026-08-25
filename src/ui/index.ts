@@ -33,3 +33,27 @@ export * from './settings/GroupView';
  *
  *     import { DERATING_MODE } from '@solis/shared/ui/pv/pvFrequencyDeratingModel'
  */
+
+/*
+ * The READER CONTRACT the cards use to fetch register words.
+ *
+ * Types only -- there is no implementation here and there must not be. A
+ * reader reaches for app state (the extension's localStorage store, the Tauri
+ * bridge's), which is exactly what `tsconfig.ui.json` forbids under `src/ui`.
+ * Each app builds its own and hands it in.
+ *
+ * This is exported flat because it is one small vocabulary with no name
+ * collisions, and because every card that reads registers needs it.
+ */
+export type { RawEntry, RawStore, RawReader } from './data/rawReader';
+
+/*
+ * Turning a stored reading into row text. `rawOf` and `currentText` are pure
+ * and collide with nothing, so they are flat.
+ */
+export * from './settings/reading';
+
+/*
+ * The PV WRITE contract. Types only -- the transport is each app's own.
+ */
+export type { PvWriter, PvWriteRequest, PvWriteOutcome } from './pv/pvWrite';

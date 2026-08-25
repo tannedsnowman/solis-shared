@@ -46,6 +46,7 @@
 import epmJson from './generated/epm.json';
 import axJson from './generated/ax.json';
 import type { GospelRegister as GospelLabels } from './gospel';
+import { applySign, type RegisterKind } from '../decode/primitives';
 
 /** Which device a map describes. EPM and EPM-AX are never interchangeable. */
 export type EpmDevice = 'epm' | 'ax';
@@ -102,6 +103,21 @@ export interface EpmRegister extends Pick<GospelLabels, 'value_map' | 'bit_flags
   data_type: string;
   /** 16 or 32. A 32-bit register owns two consecutive addresses. */
   width: number;
+  /**
+   * Width AND signedness in one field, the vocabulary the hybrid and PV maps
+   * have always used: u16 | s16 | u32 | s32 | ascii | bit.
+   *
+   * `width` and `data_type` still say the same thing between them, and are
+   * kept because `data_type` records what the DOCUMENT printed. `kind` is
+   * what the register actually IS, so an override can correct it in one place
+   * when a document is wrong -- which is exactly what nine hybrid registers
+   * already do and what EPM and AX previously had no way to express.
+   *
+   * Null for a register with no declared type at all: the "Reserve" rows, and
+   * the app-only addresses the documents never printed. The hybrid map allows
+   * the same, for the same reason.
+   */
+  kind: RegisterKind | null;
   /** "le" or "be". EVERY 32-bit EPM register is "le". Read it, don't assume. */
   word_order: 'le' | 'be';
   /** Multiplier applied to the raw value. Never 0 — the build rejects that. */
@@ -504,19 +520,42 @@ export function decodeWords(
   }
   const w = got as number[];
 
-  if (need === 1) {
-    const raw = w[0]! & 0xffff;
-    return reg.data_type.startsWith('S') && raw & 0x8000 ? raw - 0x10000 : raw;
-  }
+  /*
+   * SIGN COMES FROM `kind`, THROUGH THE SHARED `applySign`.
+   *
+   * This used to read `data_type.startsWith('S')` and hand-roll both
+   * branches: `raw - 0x10000` for 16-bit, `raw - 0x100000000` for 32-bit.
+   * That was a fourth copy of a rule the other three families take from
+   * `applySign`, and it asked a different question -- the string the DOCUMENT
+   * printed rather than what the register IS. A document that mislabels a
+   * signed register as U16 could be corrected by an override on hybrid and
+   * could not be here.
+   *
+   * `kind` carries width and signedness together now, so this asks the same
+   * question the hybrid and PV decoders ask. `width` still decides how many
+   * words to take, because that is what the document measured.
+   *
+   * Falls back to `data_type` only when `kind` is null -- the Reserve rows
+   * and the app-only addresses, which have no declared type at all.
+   */
+  const kind: RegisterKind =
+    reg.kind ??
+    (reg.data_type.startsWith('S')
+      ? need === 2
+        ? 's32'
+        : 's16'
+      : need === 2
+        ? 'u32'
+        : 'u16');
+
+  if (need === 1) return applySign(kind, w[0]! & 0xffff);
 
   // Address order in, word order applied here and NOWHERE else.
   const [low, high] =
     // `!`: the one-word branch returned above, so both indices exist here.
     reg.word_order === 'le' ? [w[0]!, w[1]!] : [w[1]!, w[0]!];
   const raw = ((high & 0xffff) * 0x10000 + (low & 0xffff)) >>> 0;
-  return reg.data_type.startsWith('S') && raw & 0x80000000
-    ? raw - 0x100000000
-    : raw;
+  return applySign(kind, raw);
 }
 
 /**

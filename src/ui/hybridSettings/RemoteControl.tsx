@@ -26,6 +26,27 @@
  * which is the whole reason the state sits up here: an edit you cannot
  * currently see is the one worth warning about.
  *
+ * THE TWO HALVES OF THE DISPATCH TAB
+ * ----------------------------------
+ * Remote dispatch is the one generation you cannot drive from a single write,
+ * and the two halves are not the same JOB:
+ *
+ *   • SETUP, 44100-44104, is written ONCE per commissioning. It arms the
+ *     interface and fences it — the master switch, the failsafe timeout, and
+ *     the import/export caps the machine must never exceed.
+ *
+ *   • REAL-TIME CONTROL, 44105-44107, is written OVER AND OVER, forever. Mode
+ *     and setpoint are the actual dispatch traffic, and the failsafe above is
+ *     a deadline on them: stop writing for longer than 44101 and the inverter
+ *     drops back to local operation on its own.
+ *
+ * A flat list of seven rows hides that difference completely, and getting it
+ * wrong is the classic failure on this interface — an integrator sets a
+ * setpoint once, watches it hold for five minutes, and reports the inverter
+ * "forgetting" its command. Two sub-headings on ONE tab is the fix: they stay
+ * together because you need the setup rows in view while you work out what to
+ * send, but they no longer read as one undifferentiated block.
+ *
  * THREE SHAPES OF ROW
  * -------------------
  *   • Plain rows own a whole register and stage on the address alone.
@@ -54,6 +75,7 @@ import {
 import {
   GroupStatus,
   GroupPane,
+  GroupSubHeading,
   RowEditor,
   RowOption,
   SaveResult,
@@ -268,18 +290,23 @@ const PlainRow: React.FC<{
  * whichever generation is showing. The register range stays in the title
  * because it is how an installer matches this screen to a protocol document.
  */
-const SECTIONS: {
+interface SectionTab {
   id: RemoteSection
   tab: string
   title: string
   note: string
-}[] = [
-  {
-    id: 'control',
-    tab: 'Remote control',
-    title: 'Remote control · 43128-43136',
-    note: 'The original interface. 16-bit, x10 W. Its battery half and grid half cancel each other — turning one on resets the other to 0.',
-  },
+}
+
+/** The tab this screen opens on, and the fallback for an unknown section. */
+const FIRST_SECTION: SectionTab = {
+  id: 'control',
+  tab: 'Remote control',
+  title: 'Remote control · 43128-43136',
+  note: 'The original interface. 16-bit, x10 W. Its battery half and grid half cancel each other — turning one on resets the other to 0.',
+}
+
+const SECTIONS: SectionTab[] = [
+  FIRST_SECTION,
   {
     id: 'dispatch',
     tab: 'Remote dispatch',
@@ -309,7 +336,7 @@ const SectionTabs: React.FC<{
   /** Sections holding staged, unsent edits — these get the dot. */
   dirty: Set<RemoteSection>
 }> = ({ active, onSelect, dirty }) => {
-  const shown = SECTIONS.find((s) => s.id === active) ?? SECTIONS[0]
+  const shown = SECTIONS.find((s) => s.id === active) ?? FIRST_SECTION
   return (
     <div style={{ flex: 'none' }}>
       <div
@@ -410,7 +437,15 @@ const RemoteControl: React.FC<RemoteControlProps> = ({ variables, id, writer }) 
    * supports. A newer machine's installer switches once; an older machine's
    * installer never has to discover that the tab they need is not the default.
    */
-  const [tab, setTab] = useState<RemoteSection>('control')
+  /**
+   * Which generation is showing.
+   *
+   * Opens on `control` — the oldest — because it is the one every machine
+   * supports. A newer machine's installer switches tab once; an older
+   * machine's installer never has to discover that the tab they need is not
+   * the one the screen opened on.
+   */
+  const [tab, setTab] = useState<RemoteSection>(FIRST_SECTION.id)
   const { write } = writer
 
   /* One timestamp for the whole render. Calling Date.now() inside each row
@@ -588,157 +623,175 @@ const RemoteControl: React.FC<RemoteControlProps> = ({ variables, id, writer }) 
     >
       <GroupStatus lastReadAt={lastReadAt} />
 
+      <SectionTabs active={tab} onSelect={setTab} dirty={dirtySections} />
+
       <GroupPane>
         {/* ---- 1. remote control, 43128-43136 ---- */}
-        <GroupSubHeading
-          title={SECTION_TITLES.control.title}
-          note={SECTION_TITLES.control.note}
-          first
-        />
-        {rowsIn('control').map((row) => plain(row))}
+        {tab === 'control' &&
+          rowsIn('control').map((row, i, all) =>
+            plain(row, { last: i === all.length - 1 }),
+          )}
 
         {/* ---- 2. remote dispatch, 44100-44107 ---- */}
-        <GroupSubHeading
-          title={SECTION_TITLES.dispatch.title}
-          note={SECTION_TITLES.dispatch.note}
-        />
-        {/* The master switch and the failsafe come first, then the two limit
-            bits, then the caps they arm — so a switch sits directly above the
-            value it governs. */}
-        {dispatchRows.slice(0, 2).map((row) =>
-          plain(row, { inactiveNote: dispatchNote(row.address) }),
-        )}
-        {LIMIT_BITS.map((b) => (
-          <SettingRowOne
-            key={`limit-${b.bit}`}
-            label={b.label}
-            reg={bitRef(RD_LIMIT_SWITCH, b.bit)}
-            description={
-              dispatchOn === false
-                ? `${b.description} Not in force right now — remote dispatch is switched off.`
-                : b.description
-            }
-            /* The raw word, so the row says both things at once: the toggle
-               says whether the cap is armed, the hex says what is actually in
-               the register. */
-            current={limitWord === undefined ? undefined : hex(limitWord)}
-            hasBeenRead={limitWord !== undefined}
-            ageMs={ageOf(variables, limitReg?.key, now)}
-            hint={ruleFor(RD_LIMIT_SWITCH)?.summary}
-            dirty={limitStaged !== undefined && limitStaged !== limitWord}
-            sendMode="immediate"
-            editor={{
-              kind: 'toggle',
-              on:
-                limitShown === undefined
-                  ? false
-                  : (limitShown & (1 << b.bit)) !== 0,
-              onChange: (on) =>
-                stage(limitSlot, withBit(limitShown ?? 0, b.bit, on)),
-            }}
-            onSave={saveLimitWord}
-          />
-        ))}
-        {dispatchRows.slice(2).map((row, i) =>
-          plain(row, {
-            inactiveNote: dispatchNote(row.address),
-            last: i === dispatchRows.length - 3,
-          }),
+        {tab === 'dispatch' && (
+          <>
+            <GroupSubHeading
+              title="Setup · 44100-44104"
+              note="Written once, at commissioning. Arms the interface and fences it: the master switch, the failsafe deadline, and the caps the machine must never exceed."
+              first
+            />
+            {/* The master switch and the failsafe come first, then the two
+                limit bits, then the caps they arm — so a switch sits directly
+                above the value it governs. */}
+            {dispatchRows.slice(0, 2).map((row) =>
+              plain(row, { inactiveNote: dispatchNote(row.address) }),
+            )}
+            {LIMIT_BITS.map((b) => (
+              <SettingRowOne
+                key={`limit-${b.bit}`}
+                label={b.label}
+                reg={bitRef(RD_LIMIT_SWITCH, b.bit)}
+                description={
+                  dispatchOn === false
+                    ? `${b.description} Not in force right now — remote dispatch is switched off.`
+                    : b.description
+                }
+                /* The raw word, so the row says both things at once: the
+                   toggle says whether the cap is armed, the hex says what is
+                   actually in the register. */
+                current={limitWord === undefined ? undefined : hex(limitWord)}
+                hasBeenRead={limitWord !== undefined}
+                ageMs={ageOf(variables, limitReg?.key, now)}
+                hint={ruleFor(RD_LIMIT_SWITCH)?.summary}
+                dirty={limitStaged !== undefined && limitStaged !== limitWord}
+                sendMode="immediate"
+                editor={{
+                  kind: 'toggle',
+                  on:
+                    limitShown === undefined
+                      ? false
+                      : (limitShown & (1 << b.bit)) !== 0,
+                  onChange: (on) =>
+                    stage(limitSlot, withBit(limitShown ?? 0, b.bit, on)),
+                }}
+                onSave={saveLimitWord}
+              />
+            ))}
+            {/* 44103 and 44104 are the caps the two bits above arm, so they
+                close the setup half rather than opening the live one. */}
+            {dispatchRows.slice(2, 4).map((row) =>
+              plain(row, { inactiveNote: dispatchNote(row.address) }),
+            )}
+
+            <GroupSubHeading
+              title="Real-time control · 44105-44107"
+              note="Written over and over, for as long as you want dispatch to hold. Miss the failsafe deadline set above and the inverter returns to local operation on its own."
+            />
+            {dispatchRows.slice(4).map((row, i, all) =>
+              plain(row, {
+                inactiveNote: dispatchNote(row.address),
+                last: i === all.length - 1,
+              }),
+            )}
+          </>
         )}
 
         {/* ---- 3. power control, 44280-44287 ---- */}
-        <GroupSubHeading
-          title={SECTION_TITLES.power.title}
-          note={SECTION_TITLES.power.note}
-        />
-        {/* Both port words first: they are the gate on the three values below,
-            and a value written with its port shut does nothing at all. */}
-        <SettingRowOne
-          label="Active power port"
-          reg={PC_ACTIVE_PORT}
-          description="Which port active power is commanded on — the AC grid port or the battery port, one or the other. Resets itself to 0 if no command arrives inside the timeout at 43282."
-          current={
-            activePortWord === undefined
-              ? undefined
-              : `port ${portOf(activePortWord)}, PV ${pvShutdownOf(activePortWord) ? 'shutdown' : 'normal'} · ${hex(activePortWord)}`
-          }
-          hasBeenRead={activePortWord !== undefined}
-          ageMs={ageOf(variables, activePortReg?.key, now)}
-          help={REMOTE_ROWS.find((r) => r.section === 'power')?.help}
-          helpTitle="Power control ports"
-          dirty={
-            activePortStaged !== undefined && activePortStaged !== activePortWord
-          }
-          sendMode="immediate"
-          editor={{
-            kind: 'select',
-            value:
-              activePortShown === undefined ? '' : portOf(activePortShown),
-            options: ACTIVE_PORT_OPTIONS,
-            onChange: (port) =>
-              stage(
-                activePortSlot,
-                portWord(
-                  activePortShown ?? 0,
-                  port,
-                  pvShutdownOf(activePortShown ?? 0),
-                ),
-              ),
-          }}
-          onSave={saveActivePort}
-        />
-        <SettingRowOne
-          label="PV shutdown"
-          reg={bitRef(PC_ACTIVE_PORT, 4)}
-          description="Shuts the PV input down. A separate nibble of the same word as the port above, so it can be set alongside either port — the two do not compete."
-          current={
-            activePortWord === undefined ? undefined : hex(activePortWord)
-          }
-          hasBeenRead={activePortWord !== undefined}
-          ageMs={ageOf(variables, activePortReg?.key, now)}
-          dirty={
-            activePortStaged !== undefined && activePortStaged !== activePortWord
-          }
-          sendMode="immediate"
-          editor={{
-            kind: 'toggle',
-            on:
-              activePortShown === undefined
-                ? false
-                : pvShutdownOf(activePortShown),
-            onChange: (on) =>
-              stage(
-                activePortSlot,
-                portWord(
-                  activePortShown ?? 0,
-                  portOf(activePortShown ?? 0),
-                  on,
-                ),
-              ),
-          }}
-          onSave={saveActivePort}
-        />
-        {/* 44281 owns its whole word, so it goes through the plain path with a
-            transcribed enum rather than the nibble maths above. */}
-        <PlainRow
-          row={{
-            address: PC_REACTIVE_PORT,
-            label: 'Reactive power port',
-            description:
-              'Opens the port for the reactive setpoint below. Resets itself to 0 if no command arrives inside the timeout at 43282.',
-            section: 'power',
-            overrideOptions: REACTIVE_PORT_OPTIONS,
-          }}
-          variables={variables}
-          id={id}
-          now={now}
-          staged={edits[String(PC_REACTIVE_PORT)]}
-          onStage={(raw) => stage(String(PC_REACTIVE_PORT), raw)}
-          onSaved={() => clearStage(String(PC_REACTIVE_PORT))}
-          writer={writer}
-        />
-        {powerRows.map((row, i) =>
-          plain(row, { last: i === powerRows.length - 1 }),
+        {tab === 'power' && (
+          <>
+            {/* Both port words first: they are the gate on the three values
+                below, and a value written with its port shut does nothing at
+                all. */}
+            <SettingRowOne
+              label="Active power port"
+              reg={PC_ACTIVE_PORT}
+              description="Which port active power is commanded on — the AC grid port or the battery port, one or the other. Resets itself to 0 if no command arrives inside the timeout at 43282."
+              current={
+                activePortWord === undefined
+                  ? undefined
+                  : `port ${portOf(activePortWord)}, PV ${pvShutdownOf(activePortWord) ? 'shutdown' : 'normal'} · ${hex(activePortWord)}`
+              }
+              hasBeenRead={activePortWord !== undefined}
+              ageMs={ageOf(variables, activePortReg?.key, now)}
+              help={REMOTE_ROWS.find((r) => r.section === 'power')?.help}
+              helpTitle="Power control ports"
+              dirty={
+                activePortStaged !== undefined &&
+                activePortStaged !== activePortWord
+              }
+              sendMode="immediate"
+              editor={{
+                kind: 'select',
+                value:
+                  activePortShown === undefined ? '' : portOf(activePortShown),
+                options: ACTIVE_PORT_OPTIONS,
+                onChange: (port) =>
+                  stage(
+                    activePortSlot,
+                    portWord(
+                      activePortShown ?? 0,
+                      port,
+                      pvShutdownOf(activePortShown ?? 0),
+                    ),
+                  ),
+              }}
+              onSave={saveActivePort}
+            />
+            <SettingRowOne
+              label="PV shutdown"
+              reg={bitRef(PC_ACTIVE_PORT, 4)}
+              description="Shuts the PV input down. A separate nibble of the same word as the port above, so it can be set alongside either port — the two do not compete."
+              current={
+                activePortWord === undefined ? undefined : hex(activePortWord)
+              }
+              hasBeenRead={activePortWord !== undefined}
+              ageMs={ageOf(variables, activePortReg?.key, now)}
+              dirty={
+                activePortStaged !== undefined &&
+                activePortStaged !== activePortWord
+              }
+              sendMode="immediate"
+              editor={{
+                kind: 'toggle',
+                on:
+                  activePortShown === undefined
+                    ? false
+                    : pvShutdownOf(activePortShown),
+                onChange: (on) =>
+                  stage(
+                    activePortSlot,
+                    portWord(
+                      activePortShown ?? 0,
+                      portOf(activePortShown ?? 0),
+                      on,
+                    ),
+                  ),
+              }}
+              onSave={saveActivePort}
+            />
+            {/* 44281 owns its whole word, so it goes through the plain path
+                with a transcribed enum rather than the nibble maths above. */}
+            <PlainRow
+              row={{
+                address: PC_REACTIVE_PORT,
+                label: 'Reactive power port',
+                description:
+                  'Opens the port for the reactive setpoint below. Resets itself to 0 if no command arrives inside the timeout at 43282.',
+                section: 'power',
+                overrideOptions: REACTIVE_PORT_OPTIONS,
+              }}
+              variables={variables}
+              id={id}
+              now={now}
+              staged={edits[String(PC_REACTIVE_PORT)]}
+              onStage={(raw) => stage(String(PC_REACTIVE_PORT), raw)}
+              onSaved={() => clearStage(String(PC_REACTIVE_PORT))}
+              writer={writer}
+            />
+            {powerRows.map((row, i) =>
+              plain(row, { last: i === powerRows.length - 1 }),
+            )}
+          </>
         )}
       </GroupPane>
     </div>

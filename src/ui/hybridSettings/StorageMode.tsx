@@ -425,10 +425,10 @@ const StorageMode: React.FC<StorageModeProps> = ({ variables, id, writer }) => {
       />
 
       <GroupPane>
-        {/* Work mode. Segmented: four exclusive choices, exactly one on. */}
+        {/* Storage mode. Segmented: four exclusive choices, exactly one on. */}
         <div data-testid={`row-${STORAGE_CONTROL}`}>
           <SettingRowOne
-            label="Work mode"
+            label="Storage mode"
             reg={STORAGE_CONTROL}
             description={
               conflicts.length

@@ -14,7 +14,13 @@
  *
  * `SettingsShell.tsx` still serves the older pages and is untouched.
  */
-import React, { CSSProperties, ReactNode, useCallback, useState } from 'react'
+import React, {
+  CSSProperties,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useState,
+} from 'react'
 import { staleStyle } from './tableTheme'
 import {
   C,
@@ -344,6 +350,15 @@ export type RowEditor =
       value: number | ''
       unit: string
       onChange: (v: number) => void
+      /**
+       * How much one press of an arrow moves the value, in DISPLAY units.
+       *
+       * Defaults to 1, which is right for the percentages and the whole-watt
+       * setpoints. A row whose register is scaled -- a x0.1 volt, say -- wants
+       * its own resolution here so the arrows land on values the machine can
+       * actually hold.
+       */
+      step?: number
     }
 
 export interface SaveResult {
@@ -917,6 +932,7 @@ const RowEditorView: React.FC<{
       editable={editable}
       dirty={dirty}
       onChange={editor.onChange}
+      step={editor.step}
     />
   )
 }
@@ -949,18 +965,131 @@ const RowEditorView: React.FC<{
  * count rather than one large fixed width, so the SOC rows are not left
  * swimming in white space.
  */
+/**
+ * THE NATIVE SPINNER IS HIDDEN, AND REPLACED WITH TWO REAL BUTTONS.
+ *
+ * `type="number"` renders its own up/down control, and the browser sizes that
+ * control from the input's height. These boxes are 24px tall, so the two
+ * arrows got 12px each MINUS the border and the inset -- roughly an 8px
+ * target, stacked, with no gap between them. Up is the worse of the two:
+ * it is the smaller half on most engines, and overshooting it hits Down, so
+ * the miss does not do nothing, it does the OPPOSITE. On a settings screen
+ * whose numbers are power setpoints and battery limits, a click that silently
+ * steps the wrong way is the one interaction that must not be fiddly.
+ *
+ * So the native control is hidden and two buttons stand beside the box, each
+ * the FULL height of the input and 16px wide. That is a target roughly four
+ * times the area, it separates the two directions, and it lets Up sit on top
+ * where people reach for it.
+ *
+ * The buttons step by `step`, which the row passes as its own resolution --
+ * whole watts for a setpoint, one percent for an SOC -- so holding to the
+ * gospel's own granularity rather than inventing a step here.
+ */
+const SPINNER_CSS = `
+input[data-testid="row-editor"]::-webkit-outer-spin-button,
+input[data-testid="row-editor"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[data-testid="row-editor"] { -moz-appearance: textfield; }
+`
+
+/**
+ * One `<style>` for the whole app, mounted by the first NumberBox to render.
+ *
+ * Inline styles cannot reach a pseudo-element, and this file has no stylesheet
+ * of its own, so the rule has to go into the document. Keyed by id so the
+ * hundred rows on a settings screen share ONE tag rather than each adding a
+ * copy.
+ */
+const SPINNER_STYLE_ID = 'solis-number-spinner'
+
+function useHiddenNativeSpinner() {
+  useEffect(() => {
+    if (typeof document === 'undefined') return
+    if (document.getElementById(SPINNER_STYLE_ID)) return
+    const tag = document.createElement('style')
+    tag.id = SPINNER_STYLE_ID
+    tag.textContent = SPINNER_CSS
+    document.head.appendChild(tag)
+    /* Deliberately NOT removed on unmount: the tag is shared by every number
+       row, so the first one to unmount would strip the rule from all the
+       others still on screen. It is a few bytes and it is idempotent. */
+  }, [])
+}
+
+/** One arrow beside the box. Full height, so the two split a real target. */
+const StepButton: React.FC<{
+  dir: 'up' | 'down'
+  disabled: boolean
+  onClick: () => void
+}> = ({ dir, disabled, onClick }) => (
+  <button
+    type="button"
+    tabIndex={-1}
+    disabled={disabled}
+    aria-label={dir === 'up' ? 'increase' : 'decrease'}
+    onClick={onClick}
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: 16,
+      flex: 1,
+      padding: 0,
+      border: `1px solid ${C.line}`,
+      /* One shared edge between the two, so they read as one control. */
+      borderBottom: dir === 'up' ? 'none' : `1px solid ${C.line}`,
+      borderTopLeftRadius: dir === 'up' ? 3 : 0,
+      borderTopRightRadius: dir === 'up' ? 3 : 0,
+      borderBottomLeftRadius: dir === 'down' ? 3 : 0,
+      borderBottomRightRadius: dir === 'down' ? 3 : 0,
+      background: C.headBg,
+      color: disabled ? C.mute2 : C.mute3,
+      cursor: disabled ? 'not-allowed' : 'pointer',
+      opacity: disabled ? 0.5 : 1,
+      font: '400 7px/1 Helvetica,Arial',
+      boxSizing: 'border-box',
+    }}
+  >
+    {dir === 'up' ? '▲' : '▼'}
+  </button>
+)
+
 const NumberBox: React.FC<{
   value: number | string
   unit: string
   editable: boolean
   dirty: boolean
   onChange: (n: number) => void
-}> = ({ value, unit, editable, dirty, onChange }) => {
+  /** How much one press of an arrow moves the value. */
+  step?: number
+}> = ({ value, unit, editable, dirty, onChange, step = 1 }) => {
+  useHiddenNativeSpinner()
   /* null means "not editing -- show the row's value". A string means the user
      is typing, and it is exactly what they have typed so far. */
   const [draft, setDraft] = useState<string | null>(null)
   const shown =
     draft ?? (value === '' || value === undefined ? '' : String(value))
+
+  /*
+   * An arrow steps from whatever is IN the box, and from 0 when it is empty or
+   * mid-edit. Stepping publishes straight away -- unlike typing, a press is a
+   * complete value the moment it happens, so there is no half-entered state to
+   * protect. The draft is cleared so the box shows the stepped number rather
+   * than the text that was being typed over it.
+   */
+  const bump = (by: number) => {
+    if (!editable) return
+    const from = Number(shown)
+    const base = Number.isFinite(from) ? from : 0
+    /* Re-rounded to the step so a typed 137.4 does not carry its remainder
+       into every later press. */
+    const next = Math.round((base + by) / step) * step
+    setDraft(null)
+    onChange(next)
+  }
 
   return (
     <span
@@ -990,6 +1119,22 @@ const NumberBox: React.FC<{
           cursor: editable ? 'text' : 'not-allowed',
         }}
       />
+      {/* Up on top, where the hand goes for it. */}
+      <span
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: 24,
+          flex: 'none',
+        }}
+      >
+        <StepButton dir="up" disabled={!editable} onClick={() => bump(step)} />
+        <StepButton
+          dir="down"
+          disabled={!editable}
+          onClick={() => bump(-step)}
+        />
+      </span>
       <span
         style={{
           font: `400 9px/1 ${MONO_FAMILY}`,

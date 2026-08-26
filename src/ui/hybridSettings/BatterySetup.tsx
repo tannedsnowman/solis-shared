@@ -25,7 +25,16 @@
  * `useRegisterWrite` refuses at that point, but a disabled editor is the
  * honest signal — an error after the click is not.
  *
- * NO SUB-HEADINGS. The list is flat; the rail is the only navigation.
+ * NO SUB-HEADINGS INSIDE A TAB. The list stays flat; the tab strip is the
+ * only navigation on the page.
+ *
+ * TABS ARE LENSES, NOT SECTIONS
+ * -----------------------------
+ * ALL is the default and holds the whole list. SOC, VOLTS and CURRENTS pull
+ * out the rows of one kind, and a row appearing on two tabs is DELIBERATE: it
+ * is the same `BatteryRow`, so `slotOf` gives it one staged edit and one Save
+ * whichever tab it is being looked at through. Switching tab mid-edit cannot
+ * lose the edit, and cannot send it twice.
  *
  * The register maths lives in `batterySetupModel.ts` and is proven in its
  * test. This file draws it.
@@ -35,6 +44,7 @@ import type { HybridWriter } from '../settings/hybridWrite'
 import { currentText, rawOf } from '../settings/GospelRows'
 import {
   GroupPane,
+  GroupStatus,
   RowEditor,
   RowOption,
   SettingRowOne,
@@ -48,15 +58,20 @@ import {
 import { ruleFor } from '../settings/GospelRows'
 import { isSet, ownedMask } from '../../settings/bitRules'
 import { byAddress } from '../../gospel/gospel'
-import { C } from '../settings/theme'
+import { C, chip } from '../settings/theme'
 import {
   BATTERY_2_MODEL_SOURCE,
+  BATTERY_TABS,
   BatteryRow,
+  BatteryTabId,
   CONNECTION_MODE,
+  FOLLOW_BATTERY_1,
   batteryAddresses,
   bitOf,
+  dirtyTabs,
   dropHiddenRowEdits,
-  rowsFor,
+  isFollowingBattery1,
+  rowsForTab,
   slotOf,
   wordForBit,
 } from '../settings/batterySetupModel'
@@ -189,7 +204,12 @@ const BatteryRowView: React.FC<{
         ageMs={ageMs}
         hint={[rule?.summary, rule?.write_explain].filter(Boolean).join('\n\n')}
         sendMode="immediate"
-        dirty={staged !== undefined}
+        /* A staged word that lands on the state already read is NOT an
+           edit. `staged !== undefined` marked the row dirty for a toggle
+           flipped and flipped back, so the row offered a Save that would
+           write the word it had just read. Compare the MEANING, not the
+           presence of a staged word -- the rule every other screen uses. */
+        dirty={staged !== undefined && on !== read}
         editor={{
           kind: 'toggle',
           on,
@@ -266,7 +286,8 @@ const BatteryRowView: React.FC<{
       readOnly={spec.readOnly}
       hint={reg?.revision_note ?? row.description}
       sendMode="immediate"
-      dirty={staged !== undefined}
+      /* Staged-equals-read is not an edit -- see the bit row above. */
+      dirty={staged !== undefined && staged !== word}
       editor={editor}
       onSave={save}
       last={last}
@@ -278,6 +299,7 @@ const BatterySetup: React.FC<BatterySetupProps> = ({ variables, id, writer }) =>
   /** Staged edits, keyed by address, holding RAW register values. */
   const [edits, setEdits] = useState<Record<string, number>>({})
   const [notice, setNotice] = useState<string | null>(null)
+  const [tab, setTab] = useState<BatteryTabId>('battery')
 
   const connectionKey = byAddress.get(CONNECTION_MODE)?.key ?? ''
   const connectionRaw = rawOf(variables, connectionKey)
@@ -288,7 +310,17 @@ const BatterySetup: React.FC<BatterySetupProps> = ({ variables, id, writer }) =>
   const stagedConnection = edits[String(CONNECTION_MODE)]
   const effectiveConnection = stagedConnection ?? connectionRaw
 
-  const rows = useMemo(() => rowsFor(effectiveConnection), [effectiveConnection])
+  /* 43814, read the same way and for the same reason: switching follow on
+     should hide battery 2's limits as the dropdown is changed, not one
+     round-trip later. */
+  const followKey = byAddress.get(FOLLOW_BATTERY_1.address)?.key ?? ''
+  const followRaw = rawOf(variables, followKey)
+  const effectiveFollow = edits[String(FOLLOW_BATTERY_1.address)] ?? followRaw
+
+  const rows = useMemo(
+    () => rowsForTab(effectiveConnection, tab, effectiveFollow),
+    [effectiveConnection, tab, effectiveFollow],
+  )
 
   const stage = useCallback((slot: string, raw: number) => {
     setEdits((e) => ({ ...e, [slot]: raw }))
@@ -314,21 +346,128 @@ const BatterySetup: React.FC<BatterySetupProps> = ({ variables, id, writer }) =>
    * write this screen exists to prevent.
    */
   useEffect(() => {
-    const { edits: kept, dropped } = dropHiddenRowEdits(edits, effectiveConnection)
+    const { edits: kept, dropped } = dropHiddenRowEdits(
+      edits,
+      effectiveConnection,
+      effectiveFollow,
+    )
     if (!dropped.length) return
     setEdits(kept)
+    const why =
+      effectiveConnection === 3
+        ? 'this inverter is set to a single battery (1Batt1DC)'
+        : 'battery 2 is set to follow battery 1, so its own limits are inert'
     setNotice(
-      `${dropped.length} unsent Battery 2 ${dropped.length === 1 ? 'edit was' : 'edits were'} dropped — this inverter is set to a single battery (1Batt1DC).`,
+      `${dropped.length} unsent Battery 2 ${dropped.length === 1 ? 'edit was' : 'edits were'} dropped — ${why}.`,
     )
-  }, [edits, effectiveConnection])
+  }, [edits, effectiveConnection, effectiveFollow])
 
   // The notice is about one decision; a later change of mind clears it.
   useEffect(() => {
-    if (effectiveConnection !== 3) setNotice(null)
-  }, [effectiveConnection])
+    if (effectiveConnection !== 3 && !isFollowingBattery1(effectiveFollow)) {
+      setNotice(null)
+    }
+  }, [effectiveConnection, effectiveFollow])
+
+  /*
+   * Which tabs hold unsent edits, for the dots.
+   *
+   * `isEdited` lives here, not in the model, because deciding it needs the
+   * store: a bit row is edited when its MEANING differs from what was read
+   * (active-low included), a value row when the staged word differs. Same
+   * test the rows themselves use to draw the dirty mark, so a dot and a row
+   * can never disagree.
+   */
+  const dirty = useMemo(
+    () =>
+      dirtyTabs(edits, effectiveConnection, effectiveFollow, (row, staged) => {
+        const reg = byAddress.get(row.address)
+        const word = rawOf(variables, reg?.key ?? '')
+        if (word === undefined) return false
+        if (!row.bitLabel) return staged !== word
+        const rule = ruleFor(row.address)
+        const bit = bitOf(rule, row.bitLabel)
+        if (bit === null) return false
+        return isSet(staged, bit) !== isSet(word, bit)
+      }),
+    [edits, effectiveConnection, effectiveFollow, variables],
+  )
+
+  /*
+   * The freshest reading on the page, for the header.
+   *
+   * Every other screen in the rail carries `GroupStatus`; this one did not, so
+   * it was the one settings screen that never said how old its numbers were.
+   * Built from ADDRESSES, so it covers the rows the current tab is hiding too
+   * -- the block was read as a block, and its age does not change with a lens.
+   */
+  const lastReadAt = useMemo(() => {
+    const stamps = ADDRESSES.map((a) =>
+      stampOf(variables, byAddress.get(a)?.key ?? ''),
+    ).filter((t): t is number => t !== null)
+    return stamps.length ? Math.max(...stamps) : null
+  }, [variables])
 
   return (
-    <GroupPane>
+    /*
+     * The same flex column every sibling screen has. A bare fragment left the
+     * tab strip and the pane as loose children of whatever mounted this, so
+     * `GroupPane`'s `flex: 1; minHeight: 0` had no column to size against.
+     */
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        flex: 1,
+        minHeight: 0,
+        width: '100%',
+      }}
+    >
+      <GroupStatus lastReadAt={lastReadAt} />
+      <div
+        data-testid="battery-tabs"
+        style={{
+          flex: 'none',
+          display: 'flex',
+          gap: 4,
+          padding: '5px 6px',
+          background: C.headBg,
+          borderBottom: `1px solid ${C.line}`,
+        }}
+      >
+        {BATTERY_TABS.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            aria-pressed={t.id === tab}
+            onClick={() => setTab(t.id)}
+            style={{
+              ...chip(t.id === tab),
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+            }}
+          >
+            <span>{t.label}</span>
+            {/* Loud on an INACTIVE tab: on a screen of lenses, an edit you
+                cannot currently see is the one worth warning about. */}
+            {dirty.has(t.id) && (
+              <span
+                aria-label="unsent edits"
+                data-testid={`battery-tab-dirty-${t.id}`}
+                style={{
+                  flex: 'none',
+                  width: 5,
+                  height: 5,
+                  borderRadius: 3,
+                  background: t.id === tab ? C.white : C.accent,
+                }}
+              />
+            )}
+          </button>
+        ))}
+      </div>
+      <GroupPane>
       {notice && (
         <div
           data-testid="battery-notice"
@@ -342,6 +481,22 @@ const BatterySetup: React.FC<BatterySetupProps> = ({ variables, id, writer }) =>
           }}
         >
           {notice}
+        </div>
+      )}
+      {/* A lens with nothing in it says so. Rendering an empty pane would
+          read as "this screen failed to load" rather than "these rows are
+          hidden because this inverter has one battery". */}
+      {rows.length === 0 && (
+        <div
+          data-testid="battery-empty"
+          style={{
+            flex: 'none',
+            padding: '10px 8px',
+            font: '500 10px/1.4 Helvetica,Arial',
+            color: C.mute,
+          }}
+        >
+          No rows on this tab for this inverter.
         </div>
       )}
       {rows.map((row, i) => {
@@ -364,7 +519,8 @@ const BatterySetup: React.FC<BatterySetupProps> = ({ variables, id, writer }) =>
           />
         )
       })}
-    </GroupPane>
+      </GroupPane>
+    </div>
   )
 }
 

@@ -15,6 +15,10 @@
       "types": "./dist/ui/index.d.ts",
       "default": "./dist/ui/index.js"
     },
+    "./ui/hybrid": {
+      "types": "./dist/ui/hybrid/index.d.ts",
+      "default": "./dist/ui/hybrid/index.js"
+    },
     "./decode": {
       "types": "./dist/decode/index.d.ts",
       "default": "./dist/decode/index.js"
@@ -85,6 +89,9 @@
       ],
       "ui": [
         "./dist/ui/index.d.ts"
+      ],
+      "ui/hybrid": [
+        "./dist/ui/hybrid/index.d.ts"
       ],
       "ui/*": [
         "./dist/ui/*.d.ts"

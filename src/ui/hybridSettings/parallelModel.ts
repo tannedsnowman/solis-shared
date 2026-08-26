@@ -57,6 +57,17 @@ export const RATED_BATTERY_CAPACITY = 43387
 
 export const FORCE_CHARGE_POWER_LIMIT = 43392
 export const GENERATOR_CHARGE_POWER = 43393
+/*
+ * MOVED TO THE STORAGE MODE SCREEN.
+ *
+ * 43394 is the Battery Reserve function's own grid-charge ceiling -- the map
+ * calls it "Grid charge power limit for battery reserve function" -- and the
+ * switch that arms it (43110 BIT04) and its SOC target (43024) are both on
+ * Storage mode. Sitting here it read as a parallel setting, which it is not:
+ * the parallel system only changes its LOWER limit.
+ *
+ * Kept exported because the address is still referenced by name.
+ */
 export const RESERVE_GRID_CHARGE_LIMIT = 43394
 
 /** One row on the screen. */
@@ -187,12 +198,6 @@ export const PARALLEL_ROWS: ParallelRow[] = [
     label: 'Generator charging power',
     description:
       'How much generator output may charge the battery across the bank, in kW. 0 up to the bank’s total rated power.',
-  },
-  {
-    address: RESERVE_GRID_CHARGE_LIMIT,
-    label: 'Battery-reserve grid charge limit',
-    description:
-      'Ceiling on charging the reserve from the grid, in watts. Lower limit 1000 W on a parallel system, up to the bank’s total rated power.',
   },
 ]
 

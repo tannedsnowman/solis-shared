@@ -221,6 +221,17 @@ export const GRID_IMPORT_POWER_HINT =
 export const BATTERY_RESERVE_SOC = 43024
 /** Peak SOC and max grid import power — the peak-shaving parameters. */
 export const PEAK_SOC = 43487
+
+/**
+ * The Battery Reserve function's own grid-charge ceiling.
+ *
+ * Moved here from the Parallel screen. The map calls it "Grid charge power
+ * limit for battery reserve function", and the switch that arms it (43110
+ * BIT04) and its SOC target (43024) are both on THIS screen -- the parallel
+ * system only changes its lower limit, which does not make it a parallel
+ * setting.
+ */
+export const RESERVE_GRID_CHARGE_LIMIT = 43394
 export const GRID_IMPORT_POWER = 43488
 
 /**
@@ -251,6 +262,12 @@ export const NUMBER_ROWS: Record<number, NumberSpec> = {
     address: GRID_IMPORT_POWER,
     label: 'Max grid import power',
     description: GRID_IMPORT_POWER_HINT,
+  },
+  [RESERVE_GRID_CHARGE_LIMIT]: {
+    address: RESERVE_GRID_CHARGE_LIMIT,
+    label: 'Battery-reserve grid charge limit',
+    description:
+      'Ceiling on charging the battery reserve from the grid, in watts. Only does anything while the Battery reserve switch above is on. Lower limit 1000 W on a parallel system, up to the total rated power.',
   },
   [PEAK_SOC]: {
     address: PEAK_SOC,

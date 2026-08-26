@@ -59,6 +59,17 @@ export * from './settings/reading';
 export type { PvWriter, PvWriteRequest, PvWriteOutcome } from './pv/pvWrite';
 
 /*
+ * The HYBRID WRITE contract. Types only, like the PV one -- and a SEPARATE
+ * type on purpose. See `settings/hybridWrite.ts` for why the four write hooks
+ * are not merged.
+ */
+export type {
+  HybridWriter,
+  HybridWriteRequest,
+  HybridWriteOutcome,
+} from './settings/hybridWrite';
+
+/*
  * The HYBRID DATA cards: the models that turn register words into rows, and
  * the three renderers that draw them.
  *

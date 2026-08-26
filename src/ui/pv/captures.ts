@@ -53,3 +53,35 @@ export function first<T>(xs: readonly T[]): T {
   }
   return v
 }
+
+/**
+ * The address at a phase slot, from a fixed-length address tuple.
+ *
+ * Same reasoning as `group` and `first`, for the shape the DATA models use.
+ * A phase table declares its registers as a literal tuple per quantity:
+ *
+ *     const V = [33251, 33253, 33255] as const
+ *
+ * and then reads them back by a slot number that a `phase(n)` helper or a
+ * `for (i)` supplies. `noUncheckedIndexedAccess` types `V[n]` as
+ * `number | undefined` because it cannot see that `n` stays inside the
+ * tuple -- correct in general, and not true of any call here: every call site
+ * indexes a tuple it declared itself, with a slot the surrounding loop or
+ * caller bounds.
+ *
+ * Throwing rather than asserting with `!` is the point. If a later edit drops
+ * a phase from one of those tuples -- three-phase quantities read on a
+ * single-phase map, say -- this names the slot on the first render instead of
+ * quietly decoding `undefined` and printing a dash where a real register
+ * should be.
+ */
+export function slot(addresses: readonly number[], n: number): number {
+  const v = addresses[n]
+  if (v === undefined) {
+    throw new Error(
+      `no address at slot ${n} of [${addresses.join(', ')}] -- ` +
+        'the address tuple and its reader disagree about how many phases there are',
+    )
+  }
+  return v
+}

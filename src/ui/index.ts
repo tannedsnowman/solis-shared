@@ -57,3 +57,20 @@ export * from './settings/reading';
  * The PV WRITE contract. Types only -- the transport is each app's own.
  */
 export type { PvWriter, PvWriteRequest, PvWriteOutcome } from './pv/pvWrite';
+
+/*
+ * The HYBRID DATA cards: the models that turn register words into rows, and
+ * the three renderers that draw them.
+ *
+ * Exported by SUBPATH, not flat, for the same reason the PV models are. Each
+ * model exports the short names its own screen wants (`row`, `bar`, `phase`)
+ * and several collide across families; `decode.ts` exports `decodeAddress`,
+ * which `decodePv` also wants to. Import the one you mean:
+ *
+ *     import { loadTable } from '@solis/shared/ui/data/phaseTable'
+ *     import PhaseTableView from '@solis/shared/ui/data/PhaseTableView'
+ *
+ * These are cards by the rule at the top of this file: they take a
+ * `RawReader` and return rows, or take rows and return JSX. Not one of them
+ * knows which app it is drawing in.
+ */

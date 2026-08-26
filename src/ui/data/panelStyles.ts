@@ -13,27 +13,43 @@
 import { CSSProperties } from "react";
 
 /** The design's palette, by the single-letter names DCLogic used. */
+/*
+ * THEMEABLE, WITH THE PORTED DESIGN AS THE DEFAULT.
+ *
+ * Every colour below is `var(--solis-<name>, <hex>)`, where the hex is the
+ * value ported from the design and the variable is the escape hatch.
+ *
+ * WHY. These cards render in two apps that do not agree about colour. The
+ * debugger extension is light-only and defines none of these variables, so it
+ * gets the hex and is pixel-identical to before. SolisConnect ships four
+ * themes (dark, orange, light, extension) driven by `data-theme` on the root,
+ * and maps its own tokens onto these -- so a card drawn there follows the
+ * theme instead of punching a cream-coloured hole in a dark window.
+ *
+ * The fallback is what keeps this safe: a third consumer that defines nothing
+ * still gets a complete, legible palette rather than unstyled text.
+ */
 export const C = {
-  green: "#0f9d63",
-  red: "#d63b3b",
-  purple: "#7c5cf0",
-  dim: "#93a3b8",
-  warn: "#c98a06",
-  blue: "#2f7ef0",
-  cyan: "#0e8fd4",
-  grey: "#a3b1c4",
-  ink: "#14213a",
-  ink2: "#22304d",
-  ink3: "#5b7594",
-  muted: "#647c99",
-  muted2: "#7b8ea8",
-  line: "#e4ebf5",
-  lineStrong: "#bcd0e8",
-  panel: "#f9fbfe",
-  panelLine: "#d7e2f0",
-  page: "#f4f7fb",
-  bar: "#eef3fa",
-  zebra: "#f2f6fc",
+  green: "var(--solis-data-green, #0f9d63)",
+  red: "var(--solis-data-red, #d63b3b)",
+  purple: "var(--solis-data-purple, #7c5cf0)",
+  dim: "var(--solis-data-dim, #93a3b8)",
+  warn: "var(--solis-data-warn, #c98a06)",
+  blue: "var(--solis-data-blue, #2f7ef0)",
+  cyan: "var(--solis-data-cyan, #0e8fd4)",
+  grey: "var(--solis-data-grey, #a3b1c4)",
+  ink: "var(--solis-data-ink, #14213a)",
+  ink2: "var(--solis-data-ink2, #22304d)",
+  ink3: "var(--solis-data-ink3, #5b7594)",
+  muted: "var(--solis-data-muted, #647c99)",
+  muted2: "var(--solis-data-muted2, #7b8ea8)",
+  line: "var(--solis-data-line, #e4ebf5)",
+  lineStrong: "var(--solis-data-lineStrong, #bcd0e8)",
+  panel: "var(--solis-data-panel, #f9fbfe)",
+  panelLine: "var(--solis-data-panelLine, #d7e2f0)",
+  page: "var(--solis-data-page, #f4f7fb)",
+  bar: "var(--solis-data-bar, #eef3fa)",
+  zebra: "var(--solis-data-zebra, #f2f6fc)",
 } as const;
 
 const MONO = "'JetBrains Mono',monospace";
@@ -242,7 +258,7 @@ export const headCell = (first: boolean): CSSProperties => ({
 
 export const headReg: CSSProperties = {
   font: `400 7px/1 ${MONO}`,
-  color: "#cfe2fb",
+  color: "var(--solis-data-headReg, #cfe2fb)",
 };
 
 export interface CellOpts {
@@ -335,7 +351,10 @@ export const rowLabel: CSSProperties = {
   minWidth: 0,
 };
 
-export const rowReg: CSSProperties = { color: "#b3bfcf" };
+export const rowReg: CSSProperties = {
+  // Sits on the themed row background, so it must follow it.
+  color: "var(--solis-data-rowReg, #b3bfcf)",
+};
 
 /*
 A value cell.
@@ -427,7 +446,7 @@ export const barLabel: CSSProperties = {
      extra character or two is worth more than the size here. The full name
      is on the title attribute either way. */
   font: `500 9px/1.2 ${MONO}`,
-  color: "#476080",
+  color: "var(--solis-data-barLabel, #476080)",
   overflow: "hidden",
   textOverflow: "ellipsis",
   minWidth: 0,
@@ -467,7 +486,16 @@ export const barValue = (color?: string, calc?: boolean): CSSProperties => ({
  * every cell shows its own register, a cell showing a FORMULA instead needs to
  * be unmistakable at a glance. "Is this measured?" outranks "is this positive?".
  */
-export const CALC_AMBER = "#c98a06";
+/*
+ * The amber that marks a CALCULATED cell -- one summed or derived rather than
+ * read from a register.
+ *
+ * Themeable like the palette above: on a dark surface this ported amber drops
+ * to about 2.9:1 against the background, which is below the 4.5:1 that makes
+ * small text readable. The apps hand it a lighter amber where the surface is
+ * dark; the extension keeps the design's own.
+ */
+export const CALC_AMBER = "var(--solis-data-calcAmber, #c98a06)";
 
 export const phaseGrid = (cols: number): CSSProperties => ({
   minWidth: `${72 + cols * 78}px`,

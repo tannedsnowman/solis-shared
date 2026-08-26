@@ -7,27 +7,43 @@
  */
 import { CSSProperties } from 'react'
 
+/*
+ * THEMEABLE, WITH THE PORTED DESIGN AS THE DEFAULT.
+ *
+ * Every colour below is `var(--solis-<name>, <hex>)`, where the hex is the
+ * value ported from the design and the variable is the escape hatch.
+ *
+ * WHY. These cards render in two apps that do not agree about colour. The
+ * debugger extension is light-only and defines none of these variables, so it
+ * gets the hex and is pixel-identical to before. SolisConnect ships four
+ * themes (dark, orange, light, extension) driven by `data-theme` on the root,
+ * and maps its own tokens onto these -- so a card drawn there follows the
+ * theme instead of punching a cream-coloured hole in a dark window.
+ *
+ * The fallback is what keeps this safe: a third consumer that defines nothing
+ * still gets a complete, legible palette rather than unstyled text.
+ */
 export const C = {
-  accent: '#d94f1a',
-  accent2: '#b3521a',
-  red: '#d0342c',
-  green: '#12805a',
-  orange: '#ea7317',
-  orangeEdge: '#c2560f',
-  ink: '#33291f',
-  ink2: '#4c3f33',
-  mute: '#96795f',
-  mute2: '#b09480',
-  mute3: '#8a6f5c',
-  line: '#f0cba9',
-  cardBg: '#fff6ee',
-  headBg: '#ffe6d0',
-  white: '#ffffff',
-  greenEdge: '#8fd3b0',
-  greenBg: '#e9f7f0',
-  tabIdle: '#ffe2c8',
-  dirtyBg: '#fff0e2',
-  scrollThumb: '#e8a76f',
+  accent: "var(--solis-set-accent, #d94f1a)",
+  accent2: "var(--solis-set-accent2, #b3521a)",
+  red: "var(--solis-set-red, #d0342c)",
+  green: "var(--solis-set-green, #12805a)",
+  orange: "var(--solis-set-orange, #ea7317)",
+  orangeEdge: "var(--solis-set-orangeEdge, #c2560f)",
+  ink: "var(--solis-set-ink, #33291f)",
+  ink2: "var(--solis-set-ink2, #4c3f33)",
+  mute: "var(--solis-set-mute, #96795f)",
+  mute2: "var(--solis-set-mute2, #b09480)",
+  mute3: "var(--solis-set-mute3, #8a6f5c)",
+  line: "var(--solis-set-line, #f0cba9)",
+  cardBg: "var(--solis-set-cardBg, #fff6ee)",
+  headBg: "var(--solis-set-headBg, #ffe6d0)",
+  white: "var(--solis-set-white, #ffffff)",
+  greenEdge: "var(--solis-set-greenEdge, #8fd3b0)",
+  greenBg: "var(--solis-set-greenBg, #e9f7f0)",
+  tabIdle: "var(--solis-set-tabIdle, #ffe2c8)",
+  dirtyBg: "var(--solis-set-dirtyBg, #fff0e2)",
+  scrollThumb: "var(--solis-set-scrollThumb, #e8a76f)",
 }
 
 const MONO = "'JetBrains Mono',monospace"

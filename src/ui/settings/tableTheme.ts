@@ -14,28 +14,44 @@
 import { CSSProperties } from "react";
 
 /** Shared with panelStyles.C — same hexes, same names. */
+/*
+ * THEMEABLE, WITH THE PORTED DESIGN AS THE DEFAULT.
+ *
+ * Every colour below is `var(--solis-<name>, <hex>)`, where the hex is the
+ * value ported from the design and the variable is the escape hatch.
+ *
+ * WHY. These cards render in two apps that do not agree about colour. The
+ * debugger extension is light-only and defines none of these variables, so it
+ * gets the hex and is pixel-identical to before. SolisConnect ships four
+ * themes (dark, orange, light, extension) driven by `data-theme` on the root,
+ * and maps its own tokens onto these -- so a card drawn there follows the
+ * theme instead of punching a cream-coloured hole in a dark window.
+ *
+ * The fallback is what keeps this safe: a third consumer that defines nothing
+ * still gets a complete, legible palette rather than unstyled text.
+ */
 export const T = {
-  page: "#f4f7fb",
-  panel: "#f9fbfe",
-  card: "#ffffff",
-  line: "#e4ebf5",
-  lineStrong: "#bcd0e8",
-  panelLine: "#d7e2f0",
-  zebra: "#f2f6fc",
-  ink: "#14213a",
-  ink2: "#22304d",
-  ink3: "#5b7594",
-  muted: "#647c99",
-  muted2: "#7b8ea8",
-  faint: "#a3b1c4",
-  blue: "#2f7ef0",
-  blueSoft: "#e3edfd",
-  green: "#0f9d63",
-  greenSoft: "#e6f6ef",
-  warn: "#c98a06",
-  warnSoft: "#fdf3dc",
-  red: "#d63b3b",
-  redSoft: "#fdeaea",
+  page: "var(--solis-tbl-page, #f4f7fb)",
+  panel: "var(--solis-tbl-panel, #f9fbfe)",
+  card: "var(--solis-tbl-card, #ffffff)",
+  line: "var(--solis-tbl-line, #e4ebf5)",
+  lineStrong: "var(--solis-tbl-lineStrong, #bcd0e8)",
+  panelLine: "var(--solis-tbl-panelLine, #d7e2f0)",
+  zebra: "var(--solis-tbl-zebra, #f2f6fc)",
+  ink: "var(--solis-tbl-ink, #14213a)",
+  ink2: "var(--solis-tbl-ink2, #22304d)",
+  ink3: "var(--solis-tbl-ink3, #5b7594)",
+  muted: "var(--solis-tbl-muted, #647c99)",
+  muted2: "var(--solis-tbl-muted2, #7b8ea8)",
+  faint: "var(--solis-tbl-faint, #a3b1c4)",
+  blue: "var(--solis-tbl-blue, #2f7ef0)",
+  blueSoft: "var(--solis-tbl-blueSoft, #e3edfd)",
+  green: "var(--solis-tbl-green, #0f9d63)",
+  greenSoft: "var(--solis-tbl-greenSoft, #e6f6ef)",
+  warn: "var(--solis-tbl-warn, #c98a06)",
+  warnSoft: "var(--solis-tbl-warnSoft, #fdf3dc)",
+  red: "var(--solis-tbl-red, #d63b3b)",
+  redSoft: "var(--solis-tbl-redSoft, #fdeaea)",
 } as const;
 
 /* ── Accent, as CSS variables ──────────────────────────────────────────

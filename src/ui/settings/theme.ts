@@ -39,6 +39,20 @@ export const C = {
   cardBg: "var(--solis-set-cardBg, #fff6ee)",
   headBg: "var(--solis-set-headBg, #ffe6d0)",
   white: "var(--solis-set-white, #ffffff)",
+  /*
+   * A WHITE SURFACE, as distinct from white INK.
+   *
+   * `white` above is used for both in the design, because on a cream card the
+   * two are the same colour. They are not the same JOB: `white` as `color:`
+   * is text sitting ON an accent fill (the Save button, an active tab) and
+   * must stay light in every theme; `field` is the background of an input or
+   * a raised surface and must go DARK when the theme does, or the input is a
+   * white slab with invisible text in it.
+   *
+   * Splitting them is what lets a themed app answer the two differently. The
+   * extension defines neither and gets #ffffff for both, exactly as before.
+   */
+  field: "var(--solis-set-field, #ffffff)",
   greenEdge: "var(--solis-set-greenEdge, #8fd3b0)",
   greenBg: "var(--solis-set-greenBg, #e9f7f0)",
   tabIdle: "var(--solis-set-tabIdle, #ffe2c8)",
@@ -128,7 +142,8 @@ export const rowCurrentStyle: CSSProperties = {
 export const editBase = (dirty: boolean): CSSProperties => ({
   font: `500 10px/1 ${MONO}`,
   color: C.ink,
-  background: C.white,
+  // The input's own fill: a SURFACE, so it follows the theme.
+  background: C.field,
   border: `1px solid ${dirty ? C.accent : C.line}`,
   borderRadius: 4,
   padding: '5px 5px',
@@ -197,7 +212,7 @@ export const revertBtn = (): CSSProperties => ({
   font: '600 9px/1 Helvetica,Arial',
   letterSpacing: '.06em',
   color: C.mute3,
-  background: C.white,
+  background: C.field,
   border: `1px solid ${C.line}`,
   borderRadius: 4,
   padding: '6px 7px',
@@ -234,8 +249,8 @@ export const tabBtn = (active: boolean): CSSProperties => ({
   cursor: 'pointer',
   padding: '7px 8px',
   borderRadius: 4,
-  border: `1px solid ${active ? C.white : 'transparent'}`,
-  background: active ? C.white : 'transparent',
+  border: `1px solid ${active ? C.field : 'transparent'}`,
+  background: active ? C.field : 'transparent',
   color: active ? C.accent : C.tabIdle,
   whiteSpace: 'nowrap',
 })
@@ -249,7 +264,7 @@ export const tabDot = (active: boolean): CSSProperties => ({
   marginLeft: 4,
   padding: '1px 3px',
   borderRadius: 6,
-  background: active ? C.accent : C.white,
+  background: active ? C.accent : C.field,
   color: active ? C.white : C.accent2,
 })
 

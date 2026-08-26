@@ -97,7 +97,7 @@ export const GroupRail: React.FC<GroupRailProps> = ({
           border: 'none',
           borderLeft: `3px solid ${g.active ? C.accent : 'transparent'}`,
           borderBottom: `1px solid ${C.line}`,
-          background: g.active ? C.white : 'transparent',
+          background: g.active ? C.field : 'transparent',
           color: g.active ? C.accent : C.mute3,
         }}
       >
@@ -760,7 +760,7 @@ export const HelpModal: React.FC<{
           style={{
             font: '700 11px/1 Helvetica,Arial',
             color: C.orange,
-            background: C.white,
+            background: C.field,
             border: 'none',
             borderRadius: 3,
             width: 18,

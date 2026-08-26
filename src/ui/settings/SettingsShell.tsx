@@ -302,7 +302,7 @@ export const SettingsFrame: React.FC<{ children: ReactNode }> = ({ children }) =
       width: '100%',
       maxWidth: 800,
       height: 600,
-      background: C.white,
+      background: C.field,
       color: C.ink,
       fontFamily: 'Helvetica,Arial,sans-serif',
       overflow: 'hidden',

@@ -6,14 +6,25 @@
  * enum overrides and the bit maths live in `remoteControlModel.ts`, where they
  * are proven without a renderer. This file draws them.
  *
- * WHY THIS ONE HAS SUB-HEADINGS WHEN THE OTHERS DO NOT
- * ---------------------------------------------------
+ * WHY THIS ONE HAS TABS WHEN THE OTHERS DO NOT
+ * --------------------------------------------
  * The other screens are one job each, so a flat list reads fine. This screen
  * is three overlapping generations of the same job — see the model's header
  * for what separates them. Which block a row belongs to is the single most
  * important thing about it, because the whole question an installer brings to
- * this page is "which of these does this machine support". Sub-headings are
- * the answer to that question, not decoration.
+ * this page is "which of these does this machine support".
+ *
+ * Sub-headings answered that question by letting you scroll past the two
+ * generations you are not using. Tabs answer it better: you pick a generation
+ * and the other two are GONE. That matters here more than it would anywhere
+ * else in the rail, because these three blocks command the same power flow by
+ * three different routes — a screen showing all three at once invites setting
+ * a value in one generation while the machine is listening to another.
+ *
+ * Staged edits live on the PAGE, not on a tab, so switching away does not
+ * discard them. The tab of a generation holding unsent edits carries a dot,
+ * which is the whole reason the state sits up here: an edit you cannot
+ * currently see is the one worth warning about.
  *
  * THREE SHAPES OF ROW
  * -------------------
@@ -43,13 +54,13 @@ import {
 import {
   GroupStatus,
   GroupPane,
-  GroupSubHeading,
   RowEditor,
   RowOption,
   SaveResult,
   SettingRowOne,
 } from '../settings/GroupView'
 import { ruleFor } from '../settings/GospelRows'
+import { C } from '../settings/theme'
 import { byAddress } from '../../gospel/gospel'
 import {
   ACTIVE_PORT_OPTIONS,
@@ -249,24 +260,157 @@ const PlainRow: React.FC<{
   )
 }
 
-const SECTION_TITLES: Record<RemoteSection, { title: string; note: string }> = {
-  control: {
+/**
+ * The three generations, in the order they were introduced.
+ *
+ * `tab` is the short name on the button; `title` and `note` are the same two
+ * lines the sub-headings used to carry, now printed under the tab row for
+ * whichever generation is showing. The register range stays in the title
+ * because it is how an installer matches this screen to a protocol document.
+ */
+const SECTIONS: {
+  id: RemoteSection
+  tab: string
+  title: string
+  note: string
+}[] = [
+  {
+    id: 'control',
+    tab: 'Remote control',
     title: 'Remote control · 43128-43136',
     note: 'The original interface. 16-bit, x10 W. Its battery half and grid half cancel each other — turning one on resets the other to 0.',
   },
-  dispatch: {
+  {
+    id: 'dispatch',
+    tab: 'Remote dispatch',
     title: 'Remote dispatch · 44100-44107',
     note: 'The replacement. Adds a settable failsafe timeout, system import/export caps, and one signed 32-bit setpoint instead of a 16-bit pair.',
   },
-  power: {
+  {
+    id: 'power',
+    tab: 'Power control',
     title: 'Power control · 44280-44287',
     note: 'The newest, and the only one that commands reactive power. Three signed 32-bit values at 1 W / 1 Var per step, each gated by a port word.',
   },
+]
+
+/**
+ * The tab row, and the title/note of the tab that is showing.
+ *
+ * NOT `theme.ts`'s `tabBtn()`: that one is built for the SETTINGS header,
+ * where the ground is orange and an idle tab is transparent with pale text.
+ * This row sits on the cream pane, so it borrows the RAIL's idiom instead —
+ * the active tab takes the `field` fill and an accent edge, the idle ones stay
+ * on the pane's own ground. Same screen, same two colours, one ground each.
+ */
+const SectionTabs: React.FC<{
+  active: RemoteSection
+  onSelect: (s: RemoteSection) => void
+  /** Sections holding staged, unsent edits — these get the dot. */
+  dirty: Set<RemoteSection>
+}> = ({ active, onSelect, dirty }) => {
+  const shown = SECTIONS.find((s) => s.id === active) ?? SECTIONS[0]
+  return (
+    <div style={{ flex: 'none' }}>
+      <div
+        role="tablist"
+        style={{
+          display: 'flex',
+          gap: 0,
+          background: C.headBg,
+          borderBottom: `1px solid ${C.line}`,
+          boxSizing: 'border-box',
+        }}
+      >
+        {SECTIONS.map((s) => {
+          const on = s.id === active
+          return (
+            <button
+              key={s.id}
+              type="button"
+              role="tab"
+              aria-selected={on}
+              data-testid={`remote-tab-${s.id}`}
+              onClick={() => onSelect(s.id)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 4,
+                flex: 1,
+                font: '600 10px/1.2 Helvetica,Arial',
+                letterSpacing: '.03em',
+                cursor: 'pointer',
+                padding: '7px 8px',
+                boxSizing: 'border-box',
+                border: 'none',
+                borderBottom: `2px solid ${on ? C.accent : 'transparent'}`,
+                background: on ? C.field : 'transparent',
+                color: on ? C.accent : C.mute3,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <span>{s.tab}</span>
+              {/* Loud on an INACTIVE tab: an edit you cannot see is the one
+                  worth warning about. */}
+              {dirty.has(s.id) && (
+                <span
+                  aria-label="unsent edits"
+                  style={{
+                    flex: 'none',
+                    width: 5,
+                    height: 5,
+                    borderRadius: 3,
+                    background: C.accent,
+                  }}
+                />
+              )}
+            </button>
+          )
+        })}
+      </div>
+      <div
+        style={{
+          flex: 'none',
+          padding: '6px 8px 4px',
+          boxSizing: 'border-box',
+        }}
+      >
+        <div
+          style={{
+            font: '700 9px/1.2 Helvetica,Arial',
+            letterSpacing: '.09em',
+            textTransform: 'uppercase',
+            color: C.mute3,
+          }}
+        >
+          {shown.title}
+        </div>
+        <div
+          style={{
+            marginTop: 2,
+            font: '400 9px/1.35 Helvetica,Arial',
+            color: C.mute,
+          }}
+        >
+          {shown.note}
+        </div>
+      </div>
+    </div>
+  )
 }
 
 const RemoteControl: React.FC<RemoteControlProps> = ({ variables, id, writer }) => {
   /** Staged edits by slot, holding RAW register values. */
   const [edits, setEdits] = useState<Record<string, number>>({})
+  /**
+   * Which generation is showing.
+   *
+   * Opens on `control` — the oldest — because it is the one every machine
+   * supports. A newer machine's installer switches once; an older machine's
+   * installer never has to discover that the tab they need is not the default.
+   */
+  const [tab, setTab] = useState<RemoteSection>('control')
   const { write } = writer
 
   /* One timestamp for the whole render. Calling Date.now() inside each row
@@ -352,6 +496,36 @@ const RemoteControl: React.FC<RemoteControlProps> = ({ variables, id, writer }) 
     if (out.ok) clearStage(activePortSlot)
     return { ok: out.ok, error: out.error }
   }, [write, activePortWord, activePortStaged, activePortReg, id, clearStage, activePortSlot])
+
+  /**
+   * Which generations hold unsent edits, for the dots on the tabs.
+   *
+   * Every slot on this screen is an address string, and every address belongs
+   * to exactly one generation — including the two shared words, whose single
+   * slot is the address they share. So the section of a staged slot is a
+   * lookup in the model's own row list, with the two ports that have no
+   * `REMOTE_ROWS` entry of their own named alongside it.
+   */
+  const dirtySections = useMemo(() => {
+    const sectionOf = new Map<string, RemoteSection>(
+      REMOTE_ROWS.map((r) => [slotOf(r), r.section]),
+    )
+    sectionOf.set(String(RD_LIMIT_SWITCH), 'dispatch')
+    sectionOf.set(String(PC_ACTIVE_PORT), 'power')
+    sectionOf.set(String(PC_REACTIVE_PORT), 'power')
+
+    const out = new Set<RemoteSection>()
+    for (const [slot, staged] of Object.entries(edits)) {
+      const reg = byAddress.get(Number(slot))
+      /* A staged value equal to what was read is not an edit — the row shows
+         no dirty mark for it either, and a dot the row disagrees with is
+         worse than no dot. */
+      if (staged === rawOf(variables, reg?.key ?? '')) continue
+      const section = sectionOf.get(slot)
+      if (section) out.add(section)
+    }
+    return out
+  }, [edits, variables])
 
   const lastReadAt = useMemo(() => {
     const stamps = ADDRESSES.map((a) =>

@@ -146,59 +146,21 @@ export const PARALLEL_ROWS: ParallelRow[] = [
     description:
       'Which phase this unit is wired to, or single-phase / split-phase. Must match the actual wiring — the bank balances against this.',
   },
-  {
-    address: BATTERY_CONNECTED_MODE,
-    label: 'Battery connection mode',
-    description:
-      'Whether the units share one battery bank or each has its own. Parallel balances off the inverters’ rated power off-grid; Individual balances off each battery.',
-  },
-  {
-    address: CRITICAL_LOAD_ON_PHASE,
-    label: 'Critical load on this phase',
-    description:
-      'Size of the backed-up load on this unit’s phase, in kVA. Range 0 to 50.0 kVA, default 4.0.',
-  },
-  {
-    address: INVERTERS_CONNECTED,
-    label: 'Inverters connected',
-    description:
-      'How many units are in the bank, 2 to 10. Default 2. Parallel systems only.',
-  },
-  {
-    address: RATED_BATTERY_CAPACITY,
-    label: 'Rated battery capacity',
-    description:
-      'Total rated capacity of the batteries on the bank, in kWh. Range 0 to 50.0 kWh, default 3.0.',
-  },
-  {
-    address: SYNC_REQUEST,
-    label: 'Parameter synchronisation request',
-    description:
-      'Asks the bank to push the master’s settings out to the slaves. The datalogger reads this at a fixed interval; set it to 1 to request a sync.',
-  },
-  {
-    address: SYNC_LOCK,
-    label: 'Synchronisation lock',
-    description:
-      'Locks a slave so the master stops overwriting its settings. 0 unlocked, 1 locked; default 0.',
-    // 43390 description: "0- Unlocked, 1- Locked; Default 0"
-    overrideOptions: [
-      { value: 0, label: 'Unlocked' },
-      { value: 1, label: 'Locked' },
-    ],
-  },
-  {
-    address: FORCE_CHARGE_POWER_LIMIT,
-    label: 'Force-charge power limit',
-    description:
-      'Ceiling on force-charging the battery across the bank, in watts. From 1000 W up to the bank’s total rated power — the unit’s rating times the number of units.',
-  },
-  {
-    address: GENERATOR_CHARGE_POWER,
-    label: 'Generator charging power',
-    description:
-      'How much generator output may charge the battery across the bank, in kW. 0 up to the bank’s total rated power.',
-  },
+  /*
+   * THE SCREEN STOPS HERE, at the connected phase.
+   *
+   * Six rows used to follow: battery connection mode, critical load on this
+   * phase, inverters connected, rated battery capacity, the two
+   * synchronisation registers, and two power limits. They are all real
+   * registers and the map describes them, but they are not what an installer
+   * comes to this screen to set -- commissioning a bank is the seven above,
+   * and the rest read as clutter around them.
+   *
+   * NOT DELETED, just not drawn here: every address constant is still
+   * exported above, so a screen that wants one can name it. The Table tab
+   * still reaches all of them, which is where a register nobody has given a
+   * home belongs.
+   */
 ]
 
 /** Every register this screen reads, for the range-button highlight. */

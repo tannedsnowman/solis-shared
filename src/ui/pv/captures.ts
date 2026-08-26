@@ -85,3 +85,27 @@ export function slot(addresses: readonly number[], n: number): number {
   }
   return v
 }
+
+
+/**
+ * The element a fixed-index read is declared to have.
+ *
+ * The settings screens index constant tables by literal -- `LEVEL_ROWS[0]`,
+ * `PORT_OPTIONS[i]` where `i` came from that same table's own `findIndex`.
+ * `noUncheckedIndexedAccess` types those `T | undefined`, correctly in
+ * general and never true at these call sites.
+ *
+ * Same bargain as `group` and `slot`: throw naming the index rather than
+ * assert with `!`, so that deleting a row from one of those tables fails
+ * loudly on first render instead of drawing a row with an undefined label.
+ */
+export function at<T>(xs: readonly T[], n: number, what = 'table'): T {
+  const v = xs[n]
+  if (v === undefined) {
+    throw new Error(
+      `no entry at index ${n} of ${what} (length ${xs.length}) -- ` +
+        'the table and its reader disagree',
+    )
+  }
+  return v
+}

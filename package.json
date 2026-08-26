@@ -59,6 +59,7 @@
     "dist"
   ],
   "scripts": {
+    "prepare": "tsc -p tsconfig.json && tsc -p tsconfig.ui.json && node scripts/copy-json.mjs",
     "build": "tsc -p tsconfig.json && tsc -p tsconfig.ui.json && node scripts/copy-json.mjs",
     "watch": "node scripts/copy-json.mjs && tsc -p tsconfig.ui.json && tsc -p tsconfig.json --watch",
     "test": "vitest run",
